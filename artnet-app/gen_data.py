@@ -116,6 +116,7 @@ if __name__ == '__main__':
 
     # 确保输出 JSON 文件的目录存在
     os.makedirs(OUTPUT_JSON, exist_ok=True)
+    os.makedirs("testie", exist_ok=True)
 
     # 遍历每一行，生成对应的 JSON 文件
     #只处理100个测试集图片
@@ -141,6 +142,8 @@ if __name__ == '__main__':
             #print(f"未知风格: {row['style']}")
             continue
         num_data += 1
+        #把该图片存到testie文件夹中
+        cv2.imwrite(os.path.join("testie", row['new_filename']), cv2.imread(img_path))
 
         true_lbl_one_hot = label_to_one_hot(true_lbl)
 
