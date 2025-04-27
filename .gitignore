@@ -1,7 +1,0 @@
-# Ignore everything in the data and raw_data directories
-artnet-app/data/
-artnet-app/raw_data/
-artnet-app/data_for_shallow/
-# If you want to allow specific files or subdirectories, you can use exceptions
-# For example, to allow a README file in the data directory:
-# !data/README.md
