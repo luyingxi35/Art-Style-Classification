@@ -94,9 +94,11 @@ def predict_and_store_one(image_path, true_label_one_hot, model, cnn_input_size=
 
     # 构建输出格式
     result = {
-        "input": scores,
-        "label": true_label_one_hot
+        "input": os.path.basename(image_path),  # 图片文件名
+        "scores": scores,                          # 五维数组
+        "label": true_label_one_hot                # 标签
     }
+
 
     # 写入 JSON
     with open(output_json_path, 'w', encoding='utf-8') as jf:
@@ -116,10 +118,16 @@ if __name__ == '__main__':
     os.makedirs(OUTPUT_JSON, exist_ok=True)
 
     # 遍历每一行，生成对应的 JSON 文件
+    #只处理100个测试集图片
+    df = df[df['in_train'] == False].head(100)  # 只处理测试集图片
     for idx, row in tqdm(df.iterrows(), total=len(df), desc="Processing Images"):
         img_path = os.path.join(IMG_DIR, row['new_filename'])  # 获取图片路径
         if not os.path.exists(img_path):
             #print(f"图片不存在: {img_path}")
+            continue
+        if row['in_train'] == True:
+            # 训练集图片不处理
+            #print(f"训练集图片: {img_path}")
             continue
         true_lbl = map_style(row['style'])
         if true_lbl == 'Unknown':
