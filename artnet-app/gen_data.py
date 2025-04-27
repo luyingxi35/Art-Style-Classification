@@ -119,9 +119,16 @@ if __name__ == '__main__':
 
     # 遍历每一行，生成对应的 JSON 文件
     #只处理100个测试集图片
-    df = df[df['in_train'] == False].head(100)  # 只处理测试集图片
+    # 筛选测试集部分
+    df = df[df['in_train'] == False]  # 筛选出测试集部分
+    if len(df) < 100:
+        raise ValueError("测试集数据不足 100 行")
+    
+    num_data = 0  # 只处理100个测试集图片
     for idx, row in tqdm(df.iterrows(), total=len(df), desc="Processing Images"):
         img_path = os.path.join(IMG_DIR, row['new_filename'])  # 获取图片路径
+        if num_data >= 100:
+            break
         if not os.path.exists(img_path):
             #print(f"图片不存在: {img_path}")
             continue
@@ -133,6 +140,7 @@ if __name__ == '__main__':
         if true_lbl == 'Unknown':
             #print(f"未知风格: {row['style']}")
             continue
+        num_data += 1
 
         true_lbl_one_hot = label_to_one_hot(true_lbl)
 
