@@ -3,17 +3,24 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import Dataset, DataLoader
 import json
+import os  # 添加 os 模块
 
 # 自定义数据集类（关键修改点：处理5×5输入）
 class CustomDataset(Dataset):
-    def __init__(self, json_file):
-        with open(json_file, 'r') as f:
-            self.data = json.load(f)
+    def __init__(self, folder_path):
+        self.data = []
+        # 遍历文件夹中的所有 JSON 文件
+        for file_name in os.listdir(folder_path):
+            if file_name.endswith('.json'):  # 只处理 JSON 文件
+                file_path = os.path.join(folder_path, file_name)
+                with open(file_path, 'r') as f:
+                    file_data = json.load(f)
+                    self.data.append(file_data)
         
-        # 输入为5个5维向量 -> 转换为5×5的张量
+        # 输入为 5×5 的张量
         self.inputs = [torch.tensor(item['input'], dtype=torch.float32) for item in self.data]
-        # 输出为单个5维向量
-        self.outputs = [torch.tensor(item['output'], dtype=torch.float32) for item in self.data]
+        # 输出为单个 5 维向量
+        self.outputs = [torch.tensor(item['label'], dtype=torch.float32) for item in self.data]
 
     def __len__(self):
         return len(self.data)
@@ -128,7 +135,7 @@ if __name__ == "__main__":
     HIDDEN_DIM = 128
 
     # 加载数据
-    train_dataset = CustomDataset('data_for_shallow.json')
+    train_dataset = CustomDataset('data_for_shallow')  # 使用文件夹路径
     # test_dataset = CustomDataset('test.json')
 
     train_loader = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True)
