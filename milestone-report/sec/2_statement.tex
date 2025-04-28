@@ -1,0 +1,13 @@
+\section{Problem Statement} \label{sec:statement}
+In this project, we address the problem of classifying paintings according to their artistic styles. Given the vast number of possible artistic styles, we focus on five major modern styles: \textbf{Cubism}, \textbf{Impressionism}, \textbf{Expressionism}, \textbf{Realism}, and \textbf{Abstract}.
+\paragraph{Dataset.}
+We utilize the Painter by Numbers dataset \cite{painter_by_numbers} as the primary source of paintings for our study.
+(TODO: Describe the preprocessing steps, including how multiple style labels are consolidated into the five selected categories; explain the preparation of input data for the shallow neural network.)
+\paragraph{Evaluation.}
+Classification accuracy is adopted as the primary evaluation metric to assess model performance.
+\paragraph{Baseline.}
+In this study, we adopt the ArtNet model \cite{artnet} as our baseline for comparative analysis. ArtNet is specifically designed to classify paintings into five distinct modern art styles: Cubism, Impressionism, Expressionism, Realism, and Abstract. 
+A key feature of ArtNet is its preprocessing strategy, where each input image is first padded to a uniform size and then divided into five patches. Both the full image and its patches are included in the training set, enabling the model to learn from global composition as well as local texture details such as brush strokes and color tones. \\
+This dual-level learning approach aligns well with our patch-based decision-making framework, making ArtNet an appropriate choice for our baseline model.
+\paragraph{Expected Results.}
+We expect the following improvements at different parts of the project: \begin{itemize} \item \textbf{Implementation part:} By introducing a shallow neural network as a decision-making module that aggregates the predictions from individual patches, we expect the overall classification accuracy to surpass that of the baseline model. \item \textbf{Optimization part:} \begin{itemize} \item By adopting a more strategic or adaptive approach for selecting the fifth patch—such as using a downsampled version of the entire image or extracting a patch containing the main semantic content—we anticipate achieving higher classification accuracy compared to simply selecting the center patch. \item By employing a more sophisticated hierarchical structure for patch extraction, rather than independently classifying five uniformly sized patches, we aim to further improve accuracy and provide insights into the spatial importance of different regions within a painting. \end{itemize} \end{itemize}
