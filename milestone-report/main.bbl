@@ -11,12 +11,9 @@ Rendi Chevi.
 \newblock \url{https://github.com/rendchevi/artnet-app}.
 \newblock Accessed: 2025-04-24.
 
-\bibitem[Imran et~al.(2023)Imran, Naqvi, Sajid, Malik, Ullah, Moqurrab, and
-  Yon]{imran2023artistic}
-Saqib Imran, Rizwan~Ali Naqvi, Muhammad Sajid, Tauqeer~Safdar Malik, Saif
-  Ullah, Syed~Atif Moqurrab, and Dong~Keon Yon.
-\newblock Artistic style recognition: combining deep and shallow neural
-  networks for painting classification.
+\bibitem[Imran et~al.(2023)Imran, Naqvi, Sajid, Malik, Ullah, Moqurrab, and Yon]{imran2023artistic}
+Saqib Imran, Rizwan~Ali Naqvi, Muhammad Sajid, Tauqeer~Safdar Malik, Saif Ullah, Syed~Atif Moqurrab, and Dong~Keon Yon.
+\newblock Artistic style recognition: combining deep and shallow neural networks for painting classification.
 \newblock \emph{Mathematics}, 11\penalty0 (22):\penalty0 4564, 2023.
 
 \bibitem[Kaggle()]{painter_by_numbers}
@@ -28,7 +25,6 @@ Kaggle.
 \bibitem[Zhang et~al.(2021)Zhang, Gong, Hong, and Jiang]{9718928}
 Zhenghua Zhang, Zhangjie Gong, Qingqing Hong, and Ling Jiang.
 \newblock Swin-transformer based classification for rice diseases recognition.
-\newblock In \emph{2021 International Conference on Computer Information
-  Science and Artificial Intelligence (CISAI)}, pages 153--156, 2021.
+\newblock In \emph{2021 International Conference on Computer Information Science and Artificial Intelligence (CISAI)}, pages 153--156, 2021.
 
 \end{thebibliography}

@@ -1,3 +1,20 @@
 \section{Intermediate/Preliminary Results}
 \label{sec:results}
-Since now, we have completed the architecture implementation and validation part, and received some preliminary results.\\
+After completing data preprocessing, constructing the training and testing datasets, and establishing the training and evaluation pipeline, we conducted experiments to assess the performance of our proposed model.
+\paragraph{Result.}The evaluation results are presented in Table~\ref{tab:evaluation_results}.
+\begin{table}[h]
+    
+    \centering
+    \begin{tabular}{c|c}
+        \hline
+        \textbf{Model} & \textbf{Prediction Accuracy} \\ \hline
+        Baseline Model (ArtNet)       & 55\%                   \\ \hline
+        DNN+ShallowNN          & 69\%                   \\ \hline
+    \end{tabular}
+    \caption{Evaluation Results}
+    \label{tab:evaluation_results}
+\end{table}
+
+As shown in Table~\ref{tab:evaluation_results}, integrating the shallow neural network as a decision-making component significantly improves classification accuracy compared to the baseline model.
+\paragraph{Analysis.}The observed improvement can be attributed to the two-phase architecture's ability to compensate for inconsistencies in patch-level predictions. 
+As described in the original study\cite{imran2023artistic}, the two-phase architecture improves classification performance by compensating for errors in patch-level predictions and effectively handling inconsistencies or noise. The shallow neural network's nonlinear modeling further outperforms simpler aggregation methods such as majority voting or averaging, resulting in more accurate final predictions.

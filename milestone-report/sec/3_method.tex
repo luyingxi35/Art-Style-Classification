@@ -16,7 +16,7 @@ and its ground-truth style label are stored in a JSON file. These JSON files
 are organized into separate directories ('train' and 'test') according to the
 original data split information.
 \paragraph{Architecture Implementation and Validation}
-The overall architecture of our model is illustrated in Figure 1. In this
+The overall architecture of our model is illustrated in Figure ~\ref{fig:main_pipeline}. In this
 design, the base model utilized for patch-level prediction is the ArtNet
 model.\\ During inference, the input image is first divided into five
 patches—top left, top right, bottom left, bottom right, and center. Each patch
@@ -32,10 +32,10 @@ directly using the baseline model for whole-image prediction.
     \centering
     \includegraphics[width=.45\textwidth]{shallownn.png}
     \caption{Shallow NN architecture}
-    \label{fig:main_pipeline}
+    \label{fig:shallow_nn}
 \end{figure}
 
-The architecture of the shallow neural network, consisting of a single hidden
+The architecture of the shallow neural network (as shown in Figure ~\ref{fig:shallow_nn}), consisting of a single hidden
 layer, is shown above. By utilizing the prepared training data—comprising five
 probability vectors as inputs and the corresponding ground truth labels as
 outputs—the shallow network can be trained to learn the mapping parameters.
