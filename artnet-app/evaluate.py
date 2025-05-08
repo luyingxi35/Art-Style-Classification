@@ -85,12 +85,15 @@ def generate_pridiction_for_shallownn(model, scores):
 def compute_correction_rate(model, test_loader):
     correct_count = 0
     total_count = 0
+    style_total = np.zeros(5)
+    style_correct = np.zeros(5)
 
     for inputs, labels, scorces in test_loader:
         for idx in range(len(inputs)):
             total_count += 1
             label_one_hot = labels[idx]
             label = np.argmax(np.array(label_one_hot))
+            style_total[label] += 1
             if IS_BASELINE:
                 input_path = inputs[idx]
                 image_path = os.path.join(IMAGE_PATH, input_path)
@@ -98,14 +101,18 @@ def compute_correction_rate(model, test_loader):
                 predicted_label = generate_pridiction_for_baseline(model, image_path)
                 if predicted_label == label:
                     correct_count += 1
+                    style_correct[label] += 1
             else:
                 scores = scorces[idx]
                 print(f"Processing {total_count}/100...")
                 predicted_label = generate_pridiction_for_shallownn(model, scores)
                 if predicted_label == label:
                     correct_count += 1
+                    style_correct[label] += 1
 
-    return correct_count / total_count
+    style_correction_rate = style_correct / style_total
+
+    return correct_count / total_count, correct_count / total_count, style_correction_rate, style_total, style_correct
 
 if __name__ == '__main__':
     test_dataset = CustomDataset(TEST_DATA_PATH)  # 使用文件夹路径
@@ -116,5 +123,21 @@ if __name__ == '__main__':
         model = ShallowNN()
         model.load_state_dict(torch.load(SHALLOWNN_PATH))
         model.eval() 
-    accuracy = compute_correction_rate(model, test_loader)
-    print(f"Correctness rate: {accuracy:.2f}")
+    accuracy, style_accuract, style_total, style_currect = compute_correction_rate(model, test_loader)
+    print(f"Total Accuracy: {accuracy * 100:.2f}%")
+    print(f"Cubism Accuracy: {style_accuract[0] * 100:.2f}%")
+    print(f"Cubism Total: {style_total[0]}")
+    print(f"Cubism Correct: {style_currect[0]}")
+    print(f"Expressionism Accuracy: {style_accuract[1] * 100:.2f}%")
+    print(f"Expressionism Total: {style_total[1]}")
+    print(f"Expressionism Correct: {style_currect[1]}")
+    print(f"Impressionism Accuracy: {style_accuract[2] * 100:.2f}%")
+    print(f"Impressionism Total: {style_total[2]}")
+    print(f"Impressionism Correct: {style_currect[2]}")
+    print(f"Realism Accuracy: {style_accuract[3] * 100:.2f}%")
+    print(f"Realism Total: {style_total[3]}")
+    print(f"Realism Correct: {style_currect[3]}")
+    print(f"Abstract Accuracy: {style_accuract[4] * 100:.2f}%")
+    print(f"Abstract Total: {style_total[4]}")
+    print(f"Abstract Correct: {style_currect[4]}")
+
