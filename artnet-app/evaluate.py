@@ -112,7 +112,7 @@ def compute_correction_rate(model, test_loader):
 
     style_correction_rate = style_correct / style_total
 
-    return correct_count / total_count, correct_count / total_count, style_correction_rate, style_total, style_correct
+    return correct_count / total_count,  style_correction_rate, style_total, style_correct
 
 if __name__ == '__main__':
     test_dataset = CustomDataset(TEST_DATA_PATH)  # 使用文件夹路径

@@ -125,26 +125,33 @@ if __name__ == '__main__':
     if len(df) < 100:
         raise ValueError("测试集数据不足 100 行")
     
-    num_data = 0  # 只处理100个测试集图片
+    # 初始化计数器字典
+    style_count = {style: 0 for style in STYLE_MAPPING.keys()}
+
+    # 遍历每一行，生成对应的 JSON 文件
     for idx, row in tqdm(df.iterrows(), total=len(df), desc="Processing Images"):
         img_path = os.path.join(IMG_DIR, row['new_filename'])  # 获取图片路径
-        if num_data >= 100:
-            break
+
+        # 跳过不存在的图片
         if not os.path.exists(img_path):
-            #print(f"图片不存在: {img_path}")
             continue
-        if row['in_train'] == True:
-            # 训练集图片不处理
-            #print(f"训练集图片: {img_path}")
-            continue
+
+        # 映射风格
         true_lbl = map_style(row['style'])
         if true_lbl == 'Unknown':
-            #print(f"未知风格: {row['style']}")
+            continue  # 跳过未知风格
+
+        # 检查该风格是否已达到 20 张
+        if style_count[true_lbl] >= 20:
             continue
-        num_data += 1
-        #把该图片存到testie文件夹中
+
+        # 增加计数器
+        style_count[true_lbl] += 1
+
+        # 把该图片存到 testie 文件夹中
         cv2.imwrite(os.path.join("testie", row['new_filename']), cv2.imread(img_path))
 
+        # 转换标签为 1-hot 向量
         true_lbl_one_hot = label_to_one_hot(true_lbl)
 
         # 定义输出 JSON 文件路径（以图片编号命名）
