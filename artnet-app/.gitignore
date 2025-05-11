@@ -2,7 +2,7 @@
 data/
 raw_data/
 trainie/
-data_for_shallow
+data_for_shallow/
 
 # If you want to allow specific files or subdirectories, you can use exceptions
 # For example, to allow a README file in the data directory:
