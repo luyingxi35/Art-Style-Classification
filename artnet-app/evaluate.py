@@ -13,7 +13,7 @@ TEST_DATA_PATH = 'test_data_for_shallow'  # 测试数据集路径
 IMAGE_PATH = 'testie'
 BASELINE_MODEL_PATH = 'model/artnet'  # 模型路径
 SHALLOWNN_PATH = 'shallow_nn_5x5.pth'
-IS_BASELINE = False  # 是否使用基线模型
+IS_BASELINE = True  # 是否使用基线模型
 
 LABEL_TO_INDEX = {
     'Cubism': 0,
@@ -141,3 +141,38 @@ if __name__ == '__main__':
     print(f"Abstract Total: {style_total[4]}")
     print(f"Abstract Correct: {style_currect[4]}")
 
+# BaseLine Model
+# Total Accuracy: 55.00%
+# Cubism Accuracy: 55.00%
+# Cubism Total: 20.0
+# Cubism Correct: 11.0
+# Expressionism Accuracy: 15.00%
+# Expressionism Total: 20.0
+# Expressionism Correct: 3.0
+# Impressionism Accuracy: 30.00%
+# Impressionism Total: 20.0
+# Impressionism Correct: 6.0
+# Realism Accuracy: 90.00%
+# Realism Total: 20.0
+# Realism Correct: 18.0
+# Abstract Accuracy: 85.00%
+# Abstract Total: 20.0
+# Abstract Correct: 17.0
+
+# 6 patches 1000epoch
+# Total Accuracy: 51.40%
+# Cubism Accuracy: 47.00%
+# Cubism Total: 100.0
+# Cubism Correct: 47.0
+# Expressionism Accuracy: 12.00%
+# Expressionism Total: 100.0
+# Expressionism Correct: 12.0
+# Impressionism Accuracy: 32.00%
+# Impressionism Total: 100.0
+# Impressionism Correct: 32.0
+# Realism Accuracy: 93.00%
+# Realism Total: 100.0
+# Realism Correct: 93.0
+# Abstract Accuracy: 73.00%
+# Abstract Total: 100.0
+# Abstract Correct: 73.0

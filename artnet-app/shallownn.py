@@ -5,21 +5,21 @@ from torch.utils.data import Dataset, DataLoader
 import json
 import os  # 添加 os 模块
 
+NUM_PATCHES = 6  # 当前 patches 的数量，包括原图和 5 个补丁
+PATCH_SIZE = 5   # 每个 patch 的大小（5×5）
+
 # 自定义数据集类（关键修改点：处理5×5输入）
 class CustomDataset(Dataset):
     def __init__(self, folder_path):
         self.data = []
-        # 遍历文件夹中的所有 JSON 文件
         for file_name in os.listdir(folder_path):
-            if file_name.endswith('.json'):  # 只处理 JSON 文件
+            if file_name.endswith('.json'):
                 file_path = os.path.join(folder_path, file_name)
                 with open(file_path, 'r') as f:
                     file_data = json.load(f)
                     self.data.append(file_data)
         
-        # 输入为 5×5 的张量
-        self.inputs = [torch.tensor(item['input'], dtype=torch.float32) for item in self.data]
-        # 输出为单个 5 维向量
+        self.inputs = [torch.tensor(item['scores'], dtype=torch.float32).view(NUM_PATCHES, PATCH_SIZE) for item in self.data]
         self.outputs = [torch.tensor(item['label'], dtype=torch.float32) for item in self.data]
 
     def __len__(self):
@@ -30,9 +30,9 @@ class CustomDataset(Dataset):
 
 # 神经网络模型（输入展平为25维）
 class ShallowNN(nn.Module):
-    def __init__(self, input_dim=25, hidden_dim=128, output_dim=5):
+    def __init__(self, input_dim=NUM_PATCHES * PATCH_SIZE, hidden_dim=128, output_dim=5):
         super().__init__()
-        self.flatten = nn.Flatten()  # 将5×5输入展平为25维
+        self.flatten = nn.Flatten()  # 将输入展平
         self.fc1 = nn.Linear(input_dim, hidden_dim)
         self.relu = nn.ReLU()
         self.fc2 = nn.Linear(hidden_dim, output_dim)
@@ -76,7 +76,7 @@ def test_model(model, test_loader, criterion):
 # 新增代码：加载模型并进行单样本测试
 def load_and_test(model_path, input_sample):
     # 1. 初始化模型（必须与训练时的结构完全一致）
-    model = ShallowNN(input_dim=25, hidden_dim=128)
+    model = ShallowNN(input_dim=NUM_PATCHES * PATCH_SIZE, hidden_dim=128)
     
     # 2. 加载保存的权重
     try:
@@ -92,7 +92,7 @@ def load_and_test(model_path, input_sample):
     # 3. 准备输入数据
     try:
         # 将Python列表转换为PyTorch张量
-        input_tensor = torch.tensor(input_sample, dtype=torch.float32)
+        input_tensor = torch.tensor(input_sample, dtype=torch.float32).view(1, NUM_PATCHES, PATCH_SIZE)
         # 添加批次维度：形状从 (5,5) 变为 (1,5,5)
         input_tensor = input_tensor.unsqueeze(0)
     except Exception as e:
@@ -131,7 +131,7 @@ if __name__ == "__main__":
     # 超参数
     BATCH_SIZE = 32
     LEARNING_RATE = 0.001
-    EPOCHS = 100
+    EPOCHS = 1000
     HIDDEN_DIM = 128
 
     # 加载数据
@@ -142,7 +142,7 @@ if __name__ == "__main__":
     # test_loader = DataLoader(test_dataset, batch_size=BATCH_SIZE)
 
     # 初始化模型
-    model = ShallowNN(input_dim=25, hidden_dim=HIDDEN_DIM)
+    model = ShallowNN(input_dim=NUM_PATCHES * PATCH_SIZE, hidden_dim=128)
     criterion = nn.MSELoss()  # 适用于回归任务
     optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
 

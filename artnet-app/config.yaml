@@ -3,4 +3,5 @@ img_dir: "raw_data/test"
 model_path: "model/artnet"
 output_patches: "patches/"
 output_json: "test_data_for_shallow/"
+output_img: "testies/"
 cnn_input_size: 325

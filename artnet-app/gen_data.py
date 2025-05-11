@@ -122,8 +122,8 @@ if __name__ == '__main__':
     #只处理100个测试集图片
     # 筛选测试集部分
     df = df[df['in_train'] == False]  # 筛选出测试集部分
-    if len(df) < 100:
-        raise ValueError("测试集数据不足 100 行")
+    if len(df) < 500:
+        raise ValueError("测试集数据不足 500 行")
     
     # 初始化计数器字典
     style_count = {style: 0 for style in STYLE_MAPPING.keys()}
@@ -142,7 +142,7 @@ if __name__ == '__main__':
             continue  # 跳过未知风格
 
         # 检查该风格是否已达到 20 张
-        if style_count[true_lbl] >= 20:
+        if style_count[true_lbl] >= 100:
             continue
 
         # 增加计数器
