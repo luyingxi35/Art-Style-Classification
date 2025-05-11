@@ -1,0 +1,8 @@
+csv_path: "../raw_data/all_data_info.csv"
+# img_dir: "../raw_data/train_1"
+img_dir: "../testie"
+model_path: "../model/artnet"
+output_patches: "patches/"
+# output_json: "data_for_shallow_4/"
+output_json: "test_data_for_shallow_4/"
+cnn_input_size: 325

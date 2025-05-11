@@ -1,0 +1,292 @@
+# Pipeline for hierarchical patch-based style classification
+# 1. Divide the image into 3 layers of patches
+# 2. Predict each patch with base model -> 3 arrays of 5d vectors
+# 3. Optimize each layer by MRF
+# 4. Entropy-based exponential fusion
+
+import os
+import json
+import cv2
+import numpy as np
+import pandas as pd
+import tensorflow as tf
+from tensorflow.keras.models import load_model
+import torch
+from torch.utils.data import Dataset, DataLoader
+import torch.nn as nn
+import tensorflow as tf
+gpus = tf.config.experimental.list_physical_devices('GPU')
+if gpus:
+    for gpu in gpus:
+        tf.config.experimental.set_memory_growth(gpu, True)
+
+CNN_INPUT_SZ = 325
+TEST_DATA_PATH = '../test_data_for_shallow' 
+IMAGE_PATH = '../testie'
+MODEL_PATH = '../model/artnet'  
+MODEL_4_PATH = 'shallow_nn_4x4.pth'
+MODEL_16_PATH = 'shallow_nn_16x16.pth'
+
+LABEL_TO_INDEX = {
+    'Cubism': 0,
+    'Expressionism': 1,
+    'Impressionism': 2,
+    'Realism': 3,
+    'Abstract': 4
+}
+
+class ShallowNN_4(nn.Module):
+    def __init__(self, input_dim=20, hidden_dim=128, output_dim=5):
+        super().__init__()
+        self.flatten = nn.Flatten()  # 将5×5输入展平为25维
+        self.fc1 = nn.Linear(input_dim, hidden_dim)
+        self.relu = nn.ReLU()
+        self.fc2 = nn.Linear(hidden_dim, output_dim)
+
+    def forward(self, x):
+        x = self.flatten(x)  # 展平操作：形状从 (batch,5,5) 变为 (batch,25)
+        x = self.fc1(x)
+        x = self.relu(x)
+        x = self.fc2(x)
+        return x
+
+class ShallowNN_16(nn.Module):
+    def __init__(self, input_dim=80, hidden_dim=128, output_dim=5):
+        super().__init__()
+        self.flatten = nn.Flatten()  # 将5×5输入展平为25维
+        self.fc1 = nn.Linear(input_dim, hidden_dim)
+        self.relu = nn.ReLU()
+        self.fc2 = nn.Linear(hidden_dim, output_dim)
+
+    def forward(self, x):
+        x = self.flatten(x)  # 展平操作：形状从 (batch,5,5) 变为 (batch,25)
+        x = self.fc1(x)
+        x = self.relu(x)
+        x = self.fc2(x)
+        return x
+
+class CustomDataset(Dataset):
+    def __init__(self, folder_path):
+        self.data = []
+        # 遍历文件夹中的所有 JSON 文件
+        for file_name in os.listdir(folder_path):
+            if file_name.endswith('.json'):  # 只处理 JSON 文件
+                file_path = os.path.join(folder_path, file_name)
+                with open(file_path, 'r') as f:
+                    file_data = json.load(f)
+                    self.data.append(file_data)
+        
+        # 输入为 5×5 的张量
+        self.inputs = [item['input'] for item in self.data]
+        # 输出为单个 5 维向量
+        self.labels = [torch.tensor(item['label'], dtype=torch.float32) for item in self.data]
+        self.scores = [torch.tensor(item['scores'], dtype=torch.float32) for item in self.data]
+
+    def __len__(self):
+        return len(self.data)
+
+    def __getitem__(self, idx):
+        return self.inputs[idx], self.labels[idx], self.scores[idx]
+
+def patch_dividing_per_layer(image, cnn_input_size=CNN_INPUT_SZ):
+    target = 2 * cnn_input_size
+    h, w = image.shape[:2]
+    scale = target / max(h, w)
+    new_w, new_h = int(w * scale), int(h * scale)
+    resized = cv2.resize(image, (new_w, new_h))
+    pad_w = target - new_w
+    pad_h = target - new_h
+    top, bottom = pad_h // 2, pad_h - pad_h // 2
+    left, right = pad_w // 2, pad_w - pad_w // 2
+    padded = cv2.copyMakeBorder(resized, top, bottom, left, right,
+                                cv2.BORDER_CONSTANT, value=[0,0,0])
+    p = cnn_input_size
+    patches = [
+        padded[0:p,       0:p      ],
+        padded[0:p,       -p:      ],
+        padded[-p:,       0:p      ],
+        padded[-p:,       -p:      ]
+    ]
+    return patches
+
+def patch_dividing(image, cnn_input_size=CNN_INPUT_SZ):
+    patches_all = []
+    patches_layer1 = []
+    patches_layer1.append(image)
+    patches_layer2 = patch_dividing_per_layer(image, cnn_input_size)
+    patches_layer3 = []
+    for i in range(len(patches_layer2)):
+        patches_temp = patch_dividing_per_layer(patches_layer2[i], cnn_input_size)
+        patches_layer3.extend(patches_temp)
+
+    # print(f"Layer 1: {len(patches_layer1)} patches")
+    # print(f"Layer 2: {len(patches_layer2)} patches")
+    # print(f"Layer 3: {len(patches_layer3)} patches")
+    patches_all.append(patches_layer1)
+    patches_all.append(patches_layer2)
+    patches_all.append(patches_layer3)
+    # print(f"Total: {len(patches_all)} layers")
+    return patches_all
+
+def generate_scores(patches_all, model):
+    scores_all = []
+    for patches in patches_all:
+        scores_tmp = []
+        for patch in patches:
+            patch = cv2.cvtColor(patch, cv2.COLOR_BGR2RGB).astype(np.float32) / 255.0
+            pred = model.predict(np.expand_dims(patch, axis=0))[0]
+            scores_tmp.append(pred.tolist())
+        scores_all.append(scores_tmp)
+    # print(f"Total: {len(scores_all)} layers")
+    # print(f"Layer 1: {len(scores_all[0])} scores")
+    # print(f"Layer 2: {len(scores_all[1])} scores")
+    # print(f"Layer 3: {len(scores_all[2])} scores")
+    # print(f"Each layer: {len(scores_all[0][0])} classes")
+    return scores_all
+
+def generate_predictions_for_each_lateyr(scores_all, base_model, model_4, model_16):
+    predictions = np.zeros((3, 5))
+    
+    with torch.no_grad():
+        predictions[0] = np.array(scores_all[0])
+
+        scores_4 = torch.tensor(scores_all[1]).unsqueeze(0).float()
+        predictions[1] = model_4(scores_4).squeeze().cpu().numpy()
+
+        scores_16 = torch.tensor(scores_all[2]).unsqueeze(0).float()
+        predictions[2] = model_16(scores_16).squeeze().cpu().numpy()
+
+    return predictions
+
+
+
+def compute_p_and_w_per_layer(scores):
+    predicted_idx = np.argmax(scores, axis=1)
+    # print(f"Predicted indices: {predicted_idx}") 
+    p_k = []
+    for idx in range(5):
+        p = np.sum(predicted_idx == idx) / len(predicted_idx)
+        p_k.append(p)
+        # print(f"Layer {idx}: p_{idx} = {p}")
+    p_k = np.array(p_k)
+    h_k = -np.sum(p_k * np.log2(p_k + 1e-10))  # Avoid log(0)
+    w_k = 1 + 1 / np.exp(h_k)
+    # print(f"p_k: {p_k}")
+    # print(f"Weight: {w_k}")
+    
+    return p_k, w_k
+
+def compute_p_and_w(scores_all):
+    p_all = []
+    w_all = []
+    for scores in scores_all:
+        p_k, w_k = compute_p_and_w_per_layer(scores)
+        p_all.append(p_k)
+        w_all.append(w_k)
+        
+    return w_all
+
+# def generate_final_label(p_all, w_all):
+#     prediction = np.zeros(5)
+#     intermidiate = np.zeros(5)
+#     sum = 0
+#     for i in range(5):
+#         for k in range(3):
+#             intermidiate[i] += w_all[k] * p_all[k][i]
+#         sum += intermidiate[i]
+#     for i in range(5):
+#         prediction[i] = intermidiate[i] / sum
+#     # print(f"Final prediction: {prediction}")
+#     prediction_idx = np.argmax(prediction)
+#     # print(f"Final predicted index: {prediction_idx}")
+#     return prediction_idx
+
+def generate_final_label(predictions, w_all):
+    # 确保 w_all 是一维的 shape (3,)
+    w_all = np.squeeze(w_all)  # 把 (3,1) -> (3,)
+    weighted_preds = predictions * w_all[:, np.newaxis]  # (3, 5) * (3, 1) → (3, 5)
+    final_prediction = np.sum(weighted_preds, axis=0) / np.sum(w_all)
+    return np.argmax(final_prediction)
+
+
+def predict_per_image(img_path, model, model_4, model_16):
+    if not os.path.exists(img_path):
+        #print(f"图片不存在: {img_path}")
+        raise FileNotFoundError(f"Image not found: {img_path}")
+    img = cv2.imread(img_path)
+
+    # 1. Divide patches
+    patches_all = patch_dividing(img)
+
+    # 2. Generate scores
+    scores_all = generate_scores(patches_all, model)
+
+    # 3. Generate prdictions
+    predictions = generate_predictions_for_each_lateyr(scores_all, model, model_4, model_16)
+
+    # 4. Entropy-based exponential fusion
+    w_all = compute_p_and_w(scores_all)
+
+    # 5. Final prediction
+    label = generate_final_label(predictions, w_all)
+
+    return label
+
+def compute_correction_rate(model, model_4, model_16, test_loader):
+    correct_count = 0
+    total_count = 0
+    style_total = np.zeros(5)
+    style_correct = np.zeros(5)
+
+    for inputs, labels, scores in test_loader:
+        for idx in range(len(inputs)):
+            total_count += 1
+            label_one_hot = labels[idx]
+            label = np.argmax(np.array(label_one_hot))
+            style_total[label] += 1
+            input_path = inputs[idx]
+            image_path = os.path.join(IMAGE_PATH, input_path)
+            print(f"Processing {image_path}({total_count}/500)...")
+            predicted_label = predict_per_image(image_path, model, model_4, model_16)
+            if predicted_label == label:
+                correct_count += 1
+                print(f"Correct!")
+                style_correct[label] += 1
+            else:
+                print(f"Wrong.")
+
+    style_correction_rate = style_correct / style_total
+
+    return correct_count / total_count, style_correction_rate, style_total, style_correct
+
+if __name__ == '__main__':
+    base_model = load_model(MODEL_PATH)
+
+    model_4 = ShallowNN_4()
+    model_4.load_state_dict(torch.load(MODEL_4_PATH, weights_only=True))
+    model_4.eval()
+
+    model_16 = ShallowNN_16()
+    model_16.load_state_dict(torch.load(MODEL_16_PATH, weights_only=True))
+    model_16.eval()
+
+    test_dataset = CustomDataset(TEST_DATA_PATH)  # 使用文件夹路径
+    test_loader = DataLoader(test_dataset, batch_size=2, shuffle=True)
+
+    accuracy, style_accuract, style_total, style_currect = compute_correction_rate(base_model, model_4, model_16, test_loader)
+    print(f"Total Accuracy: {accuracy * 100:.2f}%")
+    print(f"Cubism Accuracy: {style_accuract[0] * 100:.2f}%")
+    print(f"Cubism Total: {style_total[0]}")
+    print(f"Cubism Correct: {style_currect[0]}")
+    print(f"Expressionism Accuracy: {style_accuract[1] * 100:.2f}%")
+    print(f"Expressionism Total: {style_total[1]}")
+    print(f"Expressionism Correct: {style_currect[1]}")
+    print(f"Impressionism Accuracy: {style_accuract[2] * 100:.2f}%")
+    print(f"Impressionism Total: {style_total[2]}")
+    print(f"Impressionism Correct: {style_currect[2]}")
+    print(f"Realism Accuracy: {style_accuract[3] * 100:.2f}%")
+    print(f"Realism Total: {style_total[3]}")
+    print(f"Realism Correct: {style_currect[3]}")
+    print(f"Abstract Accuracy: {style_accuract[4] * 100:.2f}%")
+    print(f"Abstract Total: {style_total[4]}")
+    print(f"Abstract Correct: {style_currect[4]}")
