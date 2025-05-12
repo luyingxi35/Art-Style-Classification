@@ -161,13 +161,14 @@ def generate_predictions_for_each_lateyr(scores_all, base_model, model_4, model_
 
 
 def compute_p_and_w_per_layer(scores):
-    predicted_idx = np.argmax(scores, axis=1)
+    # predicted_idx = np.argmax(scores, axis=1)
     # print(f"Predicted indices: {predicted_idx}") 
-    p_k = []
-    for idx in range(5):
-        p = np.sum(predicted_idx == idx) / len(predicted_idx)
-        p_k.append(p)
-        # print(f"Layer {idx}: p_{idx} = {p}")
+    # p_k = []
+    # for idx in range(5):
+    #     p = np.sum(predicted_idx == idx) / len(predicted_idx)
+    #     p_k.append(p)
+    #     # print(f"Layer {idx}: p_{idx} = {p}")
+    p_k = np.mean(scores, axis=0)
     p_k = np.array(p_k)
     h_k = -np.sum(p_k * np.log2(p_k + 1e-10))  # Avoid log(0)
     w_k = 1 + 1 / np.exp(h_k)
@@ -203,10 +204,16 @@ def compute_p_and_w(scores_all):
 
 def generate_final_label(predictions, w_all):
     # 确保 w_all 是一维的 shape (3,)
-    w_all = np.squeeze(w_all)  # 把 (3,1) -> (3,)
-    weighted_preds = predictions * w_all[:, np.newaxis]  # (3, 5) * (3, 1) → (3, 5)
-    final_prediction = np.sum(weighted_preds, axis=0) / np.sum(w_all)
-    return np.argmax(final_prediction)
+    # w_all = np.squeeze(w_all)  # 把 (3,1) -> (3,)
+    predictions = np.array(predictions)
+    h_all = np.zeros(3)
+    for i in range(3):
+        h_all[i] = -np.sum(predictions[i] * np.log2(predictions[i] + 1e-10))  # Avoid log(0)
+    # w_all = 1 / np.exp(h_all)
+    # weighted_preds = predictions * w_all[:, np.newaxis]  # (3, 5) * (3, 1) → (3, 5)
+    # final_prediction = np.sum(weighted_preds, axis=0) / np.sum(w_all)
+    valid_idx = np.argmin(h_all)
+    return np.argmax(predictions[valid_idx])
 
 
 def predict_per_image(img_path, model, model_4, model_16):
@@ -254,6 +261,14 @@ def compute_correction_rate(model, model_4, model_16, test_loader):
                 style_correct[label] += 1
             else:
                 print(f"Wrong.")
+            style_correction_rate = style_correct / style_total
+            print(f"Style correction rate: {style_correction_rate}")
+            print(f"Total correction rate: {correct_count / total_count}")
+            with open("results_2.txt", "a") as f:
+                f.write(f"Style correction rate: {style_correction_rate}\n")
+                f.write(f"Total correction rate: {correct_count / total_count}\n")
+
+            
 
     style_correction_rate = style_correct / style_total
 

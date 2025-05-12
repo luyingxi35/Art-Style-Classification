@@ -7,13 +7,16 @@ import torch
 from torch.utils.data import Dataset, DataLoader
 import tensorflow as tf
 import torch.nn as nn
+from sklearn.metrics import classification_report
 
 
+# TEST_DATA_PATH = 'test_data_for_shallow'  # 测试数据集路径
 TEST_DATA_PATH = 'test_data_for_shallow'  # 测试数据集路径
 IMAGE_PATH = 'testie'
 BASELINE_MODEL_PATH = 'model/artnet'  # 模型路径
+# SHALLOWNN_PATH = 'shallow_nn_5x5_62.pth'
 SHALLOWNN_PATH = 'shallow_nn_5x5.pth'
-IS_BASELINE = False  # 是否使用基线模型
+IS_BASELINE = True  # 是否使用基线模型
 
 LABEL_TO_INDEX = {
     'Cubism': 0,
@@ -68,8 +71,10 @@ def generate_pridiction_for_baseline(model, image_path):
         raise ValueError(f"无法读取图像: {image_path}")
     
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB).astype(np.float32) / 255.0
-    image = tf.convert_to_tensor(image)  # 转换为 Tensor
-    pred = model.predict(np.expand_dims(image, axis=0))[0]
+    image = tf.convert_to_tensor(image, dtype=tf.float32)
+    image = tf.expand_dims(image, axis=0)  # 替代 np.expand_dims
+    pred = model(image, training=False).numpy()[0]
+
 
     label = np.argmax(np.array(pred))
 
@@ -88,56 +93,55 @@ def compute_correction_rate(model, test_loader):
     style_total = np.zeros(5)
     style_correct = np.zeros(5)
 
+    all_preds = []
+    all_labels = []
+
     for inputs, labels, scorces in test_loader:
         for idx in range(len(inputs)):
             total_count += 1
             label_one_hot = labels[idx]
             label = np.argmax(np.array(label_one_hot))
             style_total[label] += 1
+
             if IS_BASELINE:
                 input_path = inputs[idx]
                 image_path = os.path.join(IMAGE_PATH, input_path)
-                print(f"Processing {image_path}({total_count}/100)...")
+                print(f"Processing {image_path}({total_count}/500)...")
                 predicted_label = generate_pridiction_for_baseline(model, image_path)
-                if predicted_label == label:
-                    correct_count += 1
-                    style_correct[label] += 1
             else:
                 scores = scorces[idx]
-                print(f"Processing {total_count}/100...")
+                print(f"Processing {total_count}/500...")
                 predicted_label = generate_pridiction_for_shallownn(model, scores)
-                if predicted_label == label:
-                    correct_count += 1
-                    style_correct[label] += 1
+
+            all_preds.append(predicted_label)
+            all_labels.append(label)
+
+            if predicted_label == label:
+                correct_count += 1
+                style_correct[label] += 1
 
     style_correction_rate = style_correct / style_total
 
-    return correct_count / total_count,  style_correction_rate, style_total, style_correct
+    return correct_count / total_count,  style_correction_rate, style_total, style_correct, all_preds, all_labels
 
 if __name__ == '__main__':
-    test_dataset = CustomDataset(TEST_DATA_PATH)  # 使用文件夹路径
+    test_dataset = CustomDataset(TEST_DATA_PATH)
     test_loader = DataLoader(test_dataset, batch_size=4, shuffle=True)
+
     if IS_BASELINE:
         model = load_model(BASELINE_MODEL_PATH)
     else:
         model = ShallowNN()
         model.load_state_dict(torch.load(SHALLOWNN_PATH))
-        model.eval() 
-    accuracy, style_accuract, style_total, style_currect = compute_correction_rate(model, test_loader)
-    print(f"Total Accuracy: {accuracy * 100:.2f}%")
-    print(f"Cubism Accuracy: {style_accuract[0] * 100:.2f}%")
-    print(f"Cubism Total: {style_total[0]}")
-    print(f"Cubism Correct: {style_currect[0]}")
-    print(f"Expressionism Accuracy: {style_accuract[1] * 100:.2f}%")
-    print(f"Expressionism Total: {style_total[1]}")
-    print(f"Expressionism Correct: {style_currect[1]}")
-    print(f"Impressionism Accuracy: {style_accuract[2] * 100:.2f}%")
-    print(f"Impressionism Total: {style_total[2]}")
-    print(f"Impressionism Correct: {style_currect[2]}")
-    print(f"Realism Accuracy: {style_accuract[3] * 100:.2f}%")
-    print(f"Realism Total: {style_total[3]}")
-    print(f"Realism Correct: {style_currect[3]}")
-    print(f"Abstract Accuracy: {style_accuract[4] * 100:.2f}%")
-    print(f"Abstract Total: {style_total[4]}")
-    print(f"Abstract Correct: {style_currect[4]}")
+        model.eval()
 
+    accuracy, style_accuracy, style_total, style_correct, all_preds, all_labels = compute_correction_rate(model, test_loader)
+
+    print(f"\nTotal Accuracy: {accuracy * 100:.2f}%\n")
+
+    labels = ['Cubism', 'Expressionism', 'Impressionism', 'Realism', 'Abstract']
+    for i, name in enumerate(labels):
+        print(f"{name} Accuracy: {style_accuracy[i] * 100:.2f}% | Total: {style_total[i]} | Correct: {style_correct[i]}")
+
+    print("\nClassification Report (Precision / Recall / F1-Score):")
+    print(classification_report(all_labels, all_preds, target_names=labels, digits=4))
