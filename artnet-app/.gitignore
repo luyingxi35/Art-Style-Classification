@@ -1,4 +1,5 @@
 # Ignore everything in the data and raw_data directories
+data/
 raw_data/
 trainie/
 testie/

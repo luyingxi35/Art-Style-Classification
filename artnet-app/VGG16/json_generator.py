@@ -98,4 +98,4 @@ if __name__ == "__main__":
         img_size=180
     )
     # 输入图片路径和输出json路径
-    generator.generate_json("paintings_to_predict\patch_5.jpg", "test.json", label="Cubism")
+    generator.generate_json("trainie/182.jpg", "example.json", label="Minimalism")
