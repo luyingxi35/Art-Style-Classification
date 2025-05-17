@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 import tensorflow as tf
 from tensorflow.keras.models import load_model
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tqdm import tqdm
 
 # 加载配置
@@ -18,6 +19,7 @@ MODEL_PATH    = cfg['model_path']
 OUTPUT_JSON   = cfg['output_json']
 CNN_INPUT_SZ  = cfg['cnn_input_size']
 OUTPUT_PATCH  = cfg['output_patches']
+OUTPUT_IMG    = cfg['output_img']
 
 STYLE_MAPPING = {
     'Cubism': ['Cubism', 'Tubism', 'Cubo-Expressionism', 'Mechanistic Cubism', 'Analytical Cubism', 'Cubo-Futurism', 'Synthetic Cubism'],
@@ -73,36 +75,72 @@ def preprocess_and_extract_patches(image, cnn_input_size=CNN_INPUT_SZ):
     return patches
 
 
-def predict_and_store_one(image_path, true_label_one_hot, model, cnn_input_size=CNN_INPUT_SZ,
-                           output_dir=OUTPUT_PATCH, output_json_path=OUTPUT_JSON):
+def apply_data_augmentation(image):
+    """
+    对图像数据应用多种不同的增强方式，生成多个增强后的图像
+    :param image: 输入图像
+    :return: 增强后的图像列表
+    """
+    datagen = ImageDataGenerator(
+        rotation_range=30,          # 随机旋转角度范围
+        width_shift_range=0.3,      # 宽度偏移范围
+        height_shift_range=0.3,     # 高度偏移范围
+        shear_range=0.3,            # 剪切强度
+        zoom_range=0.3,             # 随机缩放范围
+        horizontal_flip=True,       # 随机水平翻转
+        brightness_range=[0.3, 1.7] # 亮度变化范围
+    )
+
+    # 将图像转换为批次格式
+    x = cv2.cvtColor(image, cv2.COLOR_BGR2RGB).astype(np.float32) / 255.0
+    x = np.expand_dims(x, axis=0)
+
+    # 生成多个增强后的图像
+    augmented_images = []
+    for _ in range(5):  # 假设生成5个增强版本
+        augmented_x = datagen.random_transform(x[0])
+        augmented_images.append((augmented_x * 255).astype(np.uint8))
+
+    return augmented_images
+
+
+def predict_and_store_augmented(image_path, true_label_one_hot, model, cnn_input_size=CNN_INPUT_SZ,
+                                output_dir=OUTPUT_PATCH, output_json_dir=OUTPUT_JSON):
     os.makedirs(output_dir, exist_ok=True)
+    os.makedirs(output_json_dir, exist_ok=True)
     img = cv2.imread(image_path)
     if img is None:
         raise ValueError(f"无法读取图像: {image_path}")
-    patches = preprocess_and_extract_patches(img, cnn_input_size)
 
-    # 预测并收集分数
-    scores = []
-    for idx, patch in enumerate(patches):
-        x = cv2.cvtColor(patch, cv2.COLOR_BGR2RGB).astype(np.float32) / 255.0
-        pred = model.predict(np.expand_dims(x, axis=0))[0]
-        scores.append(pred.tolist())
-        # 可选：保存 patch 本地查看
-        cv2.imwrite(os.path.join(output_dir, f"patch_{idx+1}.jpg"), patch)
+    # 应用数据增强，生成多个版本
+    augmented_images = apply_data_augmentation(img)
 
-    # 构建输出格式
-    result = {
-        "input": os.path.basename(image_path),  # 图片文件名
-        "scores": scores,                          # 五维数组
-        "label": true_label_one_hot                # 标签
-    }
+    # 预测并为每个增强版本生成独立的 JSON 文件
+    for idx, aug_img in enumerate(augmented_images):
+        patches = preprocess_and_extract_patches(aug_img, cnn_input_size)
 
+        scores = []
+        for patch in patches:
+            x = cv2.cvtColor(patch, cv2.COLOR_BGR2RGB).astype(np.float32) / 255.0
+            pred = model.predict(np.expand_dims(x, axis=0))[0]
+            scores.append(pred.tolist())
 
-    # 写入 JSON
-    with open(output_json_path, 'w', encoding='utf-8') as jf:
-        json.dump(result, jf, ensure_ascii=False, separators=(',', ':'))
+        # 构建输出格式
+        result = {
+            "input": f"{os.path.basename(image_path).split('.')[0]}_aug_{idx+1}",  # 增强图片的唯一标识
+            "scores": scores,                          # 五维数组
+            "label": true_label_one_hot                # 标签
+        }
 
-    #print(f"结果已保存至 {output_json_path}")
+        # 定义输出 JSON 文件路径
+        output_json_path = os.path.join(output_json_dir, f"{os.path.basename(image_path).split('.')[0]}_aug_{idx+1}.json")
+
+        # 写入 JSON
+        with open(output_json_path, 'w', encoding='utf-8') as jf:
+            json.dump(result, jf, ensure_ascii=False, separators=(',', ':'))
+
+        print(f"结果已保存至 {output_json_path}")
+
 
 if __name__ == '__main__':
     # 读取 CSV 文件
@@ -114,10 +152,9 @@ if __name__ == '__main__':
 
     # 确保输出 JSON 文件的目录存在
     os.makedirs(OUTPUT_JSON, exist_ok=True)
-    os.makedirs("testie", exist_ok=True)
+    os.makedirs("OUTPUT_IMG", exist_ok=True)
 
-    # 遍历每一行，生成对应的 JSON 文件
-    #只处理100个测试集图片
+    # 遍历每一行，生成对应的 JSON 文件（带数据增强）
     # 筛选测试集部分
     df = df[df['in_train'] == False]  # 筛选出测试集部分
     if len(df) < 500:
@@ -132,36 +169,35 @@ if __name__ == '__main__':
 
         # 跳过不存在的图片
         if not os.path.exists(img_path):
+            print(f"图片不存在: {img_path}，跳过该图片")
             continue
 
         # 映射风格
         true_lbl = map_style(row['style'])
         if true_lbl == 'Unknown':
+            print(f"未知风格: {row['style']}，跳过该图片")
             continue  # 跳过未知风格
 
-        # # 检查该风格是否已达到 20 张
-        # if style_count[true_lbl] >= 100:
-        #     continue
+        # 检查该风格是否已达到 20 张
+        if style_count[true_lbl] >= 100:
+            continue
 
-        # # 增加计数器
-        # style_count[true_lbl] += 1
 
-        # # 把该图片存到 testie 文件夹中
-        # cv2.imwrite(os.path.join("testie", row['new_filename']), cv2.imread(img_path))
+        # 增加计数器
+        style_count[true_lbl] += 1
+
+        # 把该图片存到 testie 文件夹中
+        cv2.imwrite(os.path.join(OUTPUT_IMG, row['new_filename']), cv2.imread(img_path))
 
         # 转换标签为 1-hot 向量
         true_lbl_one_hot = label_to_one_hot(true_lbl)
 
-        # 定义输出 JSON 文件路径（以图片编号命名）
-        output_json_path = os.path.join(OUTPUT_JSON, f"{row['new_filename'].split('.')[0]}.json")
-
         # 调用预测函数并保存结果
         try:
-            predict_and_store_one(
+            predict_and_store_augmented(
                 image_path=img_path,
                 true_label_one_hot=true_lbl_one_hot,
-                model=model,
-                output_json_path=output_json_path
+                model=model
             )
         except Exception as e:
             print(f"处理图片 {img_path} 时出错: {e}")

@@ -15,6 +15,8 @@ import torch
 from torch.utils.data import Dataset, DataLoader
 import torch.nn as nn
 import tensorflow as tf
+from sklearn.metrics import classification_report
+
 gpus = tf.config.experimental.list_physical_devices('GPU')
 if gpus:
     for gpu in gpus:
@@ -51,18 +53,26 @@ class ShallowNN_4(nn.Module):
         return x
 
 class ShallowNN_16(nn.Module):
-    def __init__(self, input_dim=80, hidden_dim=128, output_dim=5):
+    def __init__(self, input_dim=80, hidden_dim1=128, hidden_dim2=64, hidden_dim3=32, output_dim=5):
         super().__init__()
-        self.flatten = nn.Flatten()  # 将5×5输入展平为25维
-        self.fc1 = nn.Linear(input_dim, hidden_dim)
-        self.relu = nn.ReLU()
-        self.fc2 = nn.Linear(hidden_dim, output_dim)
+        self.flatten = nn.Flatten()
+        self.fc1 = nn.Linear(input_dim, hidden_dim1)
+        self.relu1 = nn.ReLU()
+        self.fc2 = nn.Linear(hidden_dim1, hidden_dim2)
+        self.relu2 = nn.ReLU()
+        self.fc3 = nn.Linear(hidden_dim2, hidden_dim3)
+        self.relu3 = nn.ReLU()
+        self.fc4 = nn.Linear(hidden_dim3, output_dim)
 
     def forward(self, x):
-        x = self.flatten(x)  # 展平操作：形状从 (batch,5,5) 变为 (batch,25)
+        x = self.flatten(x)
         x = self.fc1(x)
-        x = self.relu(x)
+        x = self.relu1(x)
         x = self.fc2(x)
+        x = self.relu2(x)
+        x = self.fc3(x)
+        x = self.relu3(x)
+        x = self.fc4(x)
         return x
 
 class CustomDataset(Dataset):
@@ -161,13 +171,14 @@ def generate_predictions_for_each_lateyr(scores_all, base_model, model_4, model_
 
 
 def compute_p_and_w_per_layer(scores):
-    predicted_idx = np.argmax(scores, axis=1)
+    # predicted_idx = np.argmax(scores, axis=1)
     # print(f"Predicted indices: {predicted_idx}") 
-    p_k = []
-    for idx in range(5):
-        p = np.sum(predicted_idx == idx) / len(predicted_idx)
-        p_k.append(p)
-        # print(f"Layer {idx}: p_{idx} = {p}")
+    # p_k = []
+    # for idx in range(5):
+    #     p = np.sum(predicted_idx == idx) / len(predicted_idx)
+    #     p_k.append(p)
+    #     # print(f"Layer {idx}: p_{idx} = {p}")
+    p_k = np.mean(scores, axis=0)
     p_k = np.array(p_k)
     h_k = -np.sum(p_k * np.log2(p_k + 1e-10))  # Avoid log(0)
     w_k = 1 + 1 / np.exp(h_k)
@@ -203,10 +214,16 @@ def compute_p_and_w(scores_all):
 
 def generate_final_label(predictions, w_all):
     # 确保 w_all 是一维的 shape (3,)
-    w_all = np.squeeze(w_all)  # 把 (3,1) -> (3,)
-    weighted_preds = predictions * w_all[:, np.newaxis]  # (3, 5) * (3, 1) → (3, 5)
-    final_prediction = np.sum(weighted_preds, axis=0) / np.sum(w_all)
-    return np.argmax(final_prediction)
+    # w_all = np.squeeze(w_all)  # 把 (3,1) -> (3,)
+    predictions = np.array(predictions)
+    h_all = np.zeros(3)
+    for i in range(3):
+        h_all[i] = -np.sum(predictions[i] * np.log2(predictions[i] + 1e-10))  # Avoid log(0)
+    # w_all = 1 / np.exp(h_all)
+    # weighted_preds = predictions * w_all[:, np.newaxis]  # (3, 5) * (3, 1) → (3, 5)
+    # final_prediction = np.sum(weighted_preds, axis=0) / np.sum(w_all)
+    valid_idx = np.argmin(h_all)
+    return np.argmax(predictions[valid_idx])
 
 
 def predict_per_image(img_path, model, model_4, model_16):
@@ -232,11 +249,23 @@ def predict_per_image(img_path, model, model_4, model_16):
 
     return label
 
+def classification_report_to_markdown(y_true, y_pred, target_names):
+    report_dict = classification_report(y_true, y_pred, target_names=target_names, digits=4, output_dict=True)
+    df = pd.DataFrame(report_dict).transpose().reset_index().rename(columns={'index': 'Class'})
+    for col in ['precision', 'recall', 'f1-score']:
+        df[col] = df[col].apply(lambda x: f"{x:.4f}" if isinstance(x, float) else x)
+    df['support'] = df['support'].astype(int)
+    print("\n### Classification Report (Markdown Format):\n")
+    print(df.to_markdown(index=False))
+
 def compute_correction_rate(model, model_4, model_16, test_loader):
     correct_count = 0
     total_count = 0
     style_total = np.zeros(5)
     style_correct = np.zeros(5)
+
+    all_preds = []
+    all_labels = []
 
     for inputs, labels, scores in test_loader:
         for idx in range(len(inputs)):
@@ -254,10 +283,20 @@ def compute_correction_rate(model, model_4, model_16, test_loader):
                 style_correct[label] += 1
             else:
                 print(f"Wrong.")
+            style_correction_rate = style_correct / style_total
+            print(f"Style correction rate: {style_correction_rate}")
+            print(f"Total correction rate: {correct_count / total_count}")
+            with open("results_2.txt", "a") as f:
+                f.write(f"Style correction rate: {style_correction_rate}\n")
+                f.write(f"Total correction rate: {correct_count / total_count}\n")
+
+            all_preds.append(predicted_label)
+            all_labels.append(label)
+            
 
     style_correction_rate = style_correct / style_total
 
-    return correct_count / total_count, style_correction_rate, style_total, style_correct
+    return correct_count / total_count, style_correction_rate, style_total, style_correct, all_preds, all_labels
 
 if __name__ == '__main__':
     base_model = load_model(MODEL_PATH)
@@ -273,20 +312,15 @@ if __name__ == '__main__':
     test_dataset = CustomDataset(TEST_DATA_PATH)  # 使用文件夹路径
     test_loader = DataLoader(test_dataset, batch_size=2, shuffle=True)
 
-    accuracy, style_accuract, style_total, style_currect = compute_correction_rate(base_model, model_4, model_16, test_loader)
-    print(f"Total Accuracy: {accuracy * 100:.2f}%")
-    print(f"Cubism Accuracy: {style_accuract[0] * 100:.2f}%")
-    print(f"Cubism Total: {style_total[0]}")
-    print(f"Cubism Correct: {style_currect[0]}")
-    print(f"Expressionism Accuracy: {style_accuract[1] * 100:.2f}%")
-    print(f"Expressionism Total: {style_total[1]}")
-    print(f"Expressionism Correct: {style_currect[1]}")
-    print(f"Impressionism Accuracy: {style_accuract[2] * 100:.2f}%")
-    print(f"Impressionism Total: {style_total[2]}")
-    print(f"Impressionism Correct: {style_currect[2]}")
-    print(f"Realism Accuracy: {style_accuract[3] * 100:.2f}%")
-    print(f"Realism Total: {style_total[3]}")
-    print(f"Realism Correct: {style_currect[3]}")
-    print(f"Abstract Accuracy: {style_accuract[4] * 100:.2f}%")
-    print(f"Abstract Total: {style_total[4]}")
-    print(f"Abstract Correct: {style_currect[4]}")
+    accuracy, style_accuracy, style_total, style_correct, all_preds, all_labels = compute_correction_rate(base_model, model_4, model_16, test_loader)
+
+    print(f"\nTotal Accuracy: {accuracy * 100:.2f}%\n")
+
+    labels = ['Cubism', 'Expressionism', 'Impressionism', 'Realism', 'Abstract']
+    for i, name in enumerate(labels):
+        print(f"{name} Accuracy: {style_accuracy[i] * 100:.2f}% | Total: {style_total[i]} | Correct: {style_correct[i]}")
+
+    print("\nClassification Report (Precision / Recall / F1-Score):")
+    print(classification_report(all_labels, all_preds, target_names=labels, digits=4))
+
+    

@@ -1,11 +1,10 @@
-csv_path: "raw_data/all_data_info.csv"
-img_dir: "raw_data/test"
-model_path: "model/artnet"
-output_patches: "patches/"
+csv_path: "../raw_data/all_data_info.csv"
+img_dir: "../raw_data/train_1"
+model_path: "fine_tuned_VGG16_180x180.h5"
 output_json: "train_data_for_shallow/"
 #output_json: "test_data_for_shallow/"
 output_img: "trainie/"
 #output_img: "testie/"
-cnn_input_size: 325
+cnn_input_size: 180
 in_train: True
 # in_train: False

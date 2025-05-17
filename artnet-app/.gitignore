@@ -1,6 +1,10 @@
 # Ignore everything in the data and raw_data directories
-data/
 raw_data/
+trainie/
+testie/
+train_data_for_shallow/
+test_data_for_shallow/
+hierachy/
 
 # If you want to allow specific files or subdirectories, you can use exceptions
 # For example, to allow a README file in the data directory:
