@@ -1,0 +1,18 @@
+Cubism Accuracy: 59.00% | Total: 100.0 | Correct: 59.0
+Expressionism Accuracy: 30.00% | Total: 100.0 | Correct: 30.0
+Impressionism Accuracy: 66.00% | Total: 100.0 | Correct: 66.0
+Realism Accuracy: 87.00% | Total: 100.0 | Correct: 87.0
+Abstract Accuracy: 54.00% | Total: 100.0 | Correct: 54.0
+
+Classification Report (Precision / Recall / F1-Score):
+               precision    recall  f1-score   support
+
+       Cubism     0.7468    0.5900    0.6592       100
+Expressionism     0.3409    0.3000    0.3191       100
+Impressionism     0.5946    0.6600    0.6256       100
+      Realism     0.6214    0.8700    0.7250       100
+     Abstract     0.6585    0.5400    0.5934       100
+
+     accuracy                         0.5920       500
+    macro avg     0.5925    0.5920    0.5845       500
+ weighted avg     0.5925    0.5920    0.5845       500

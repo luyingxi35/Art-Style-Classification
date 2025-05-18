@@ -56,12 +56,23 @@ Impressionism Accuracy: 63.00%
 Realism Accuracy: 74.00%  
 Abstract Accuracy: 59.00%
 
-Hierachy 2 (directly select prediction with lowerst entropy): 57.2% 
-> Cubism Accuracy: 56.00%  
-Expressionism Accuracy: 42.00%  
-Impressionism Accuracy: 67.00%  
-Realism Accuracy: 69.00%  
-Abstract Accuracy: 52.00%
+Hierarchy 2 (select the max entropy): 58%
+> Cubism Accuracy: 60.00%  
+Expressionism Accuracy: 39.00%  
+Impressionism Accuracy: 66.00%  
+Realism Accuracy: 72.00%  
+Abstract Accuracy: 53.00%
+
+| Class         | Precision | Recall | F1-Score | Support |
+|---------------|-----------|--------|----------|---------|
+| Cubism        | 0.7692    | 0.6000 | 0.6742   | 100     |
+| Expressionism | 0.3824    | 0.3900 | 0.3861   | 100     |
+| Impressionism | 0.5077    | 0.6600 | 0.5739   | 100     |
+| Realism       | 0.6261    | 0.7200 | 0.6698   | 100     |
+| Abstract      | 0.7067    | 0.5300 | 0.6057   | 100     |
+| **Accuracy**  |           |        | **0.5800**| 500     |
+| **Macro Avg** | 0.5984    | 0.5800 | 0.5819   | 500     |
+| **Weighted Avg** | 0.5984 | 0.5800 | 0.5819   | 500     |
 
 Reproduction guide:
 - For baseline: change IS_BASELINE in evaluation.py into True
