@@ -11,7 +11,7 @@ with open('config.yaml', 'r') as f:
     cfg = yaml.safe_load(f)
 
 CSV_PATH      = cfg['csv_path']
-IMG_DIR       = cfg['img_dir']
+IMG_DIR      = cfg['img_dir']  # 这是一个列表
 MODEL_PATH    = cfg['model_path']
 OUTPUT_JSON   = cfg['output_json']
 OUTPUT_IMG    = cfg['output_img']
@@ -23,6 +23,15 @@ STYLES = [
             'Renaissance', 'Pointillism', 'Realism', 'Ukiyo_e', 'Symbolism', 'Baroque', 'Cubism',
             'Abstract', 'Pop_Art', 'Impressionism', 'Expressionism', 'Color_Field_Painting'
         ]
+
+def find_image_path(img_dir, filename):
+    if not isinstance(img_dir, list):
+        img_dir = [img_dir]
+    for folder in img_dir:
+        img_path = os.path.join(folder, filename)
+        if os.path.exists(img_path):
+            return img_path
+    return None
 
 # 读取 CSV 文件
 df = pd.read_csv(CSV_PATH)
@@ -37,31 +46,27 @@ os.makedirs(OUTPUT_IMG, exist_ok=True)
 # 遍历每一行，生成对应的 JSON 文件
 # 筛选测试集部分
 df = df[df['in_train'] == INTRAIN]  # 筛选出测试/训练集部分
-if len(df) < 100:
-    raise ValueError("测试集数据不足 100 行")
 
-# 初始化计数器字典
+
 style_count = {style: 0 for style in STYLES}
-max_per_style = 20  # 每种风格最多 20 张图片
+max_per_style = 1000
 
 json_gen = JSONGenerator(
     model_path=MODEL_PATH,
-    img_size=CNN_INPUT_SZ
+    img_size=CNN_INPUT_SZ   
 )
 
 
 # 遍历每一行，生成对应的 JSON 文件
 for idx, row in tqdm(df.iterrows(), total=len(df), desc="Processing Images"):
-    img_path = os.path.join(IMG_DIR, row['new_filename'])  # 获取图片路径
-
-    # 跳过不存在的图片
-    if not os.path.exists(img_path):
+    img_path = find_image_path(IMG_DIR, row['new_filename'])
+    if img_path is None:
         continue
 
     # 映射风格
     true_lbl = row['style']
     if true_lbl not in STYLES:
-        continue  # 跳过未知风格
+        continue
 
     # 检查该风格是否已达到 20 张
     if style_count[true_lbl] >= max_per_style:
@@ -92,3 +97,23 @@ for style, count in style_count.items():
     print(f"{style}: {count} 张")
 # 输出总图片数量
 print(f"总图片数量: {sum(style_count.values())} 张")
+
+# 每种风格的图片数量：
+# Minimalism: 314 张
+# Romanticism: 1000 张
+# Rococo: 1000 张
+# Post_Impressionism: 0 张
+# Art_Nouveau_Modern: 0 张
+# Renaissance: 0 张
+# Pointillism: 387 张
+# Realism: 1000 张
+# Ukiyo_e: 0 张
+# Symbolism: 1000 张
+# Baroque: 1000 张
+# Cubism: 1000 张
+# Abstract: 0 张
+# Pop_Art: 0 张
+# Impressionism: 1000 张
+# Expressionism: 1000 张
+# Color_Field_Painting: 0 张
+# 总图片数量: 8701 张
