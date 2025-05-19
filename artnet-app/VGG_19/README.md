@@ -1,5 +1,7 @@
 # VGG-19代码上和之前不同的地方
 
+> Download the checkpoint at:  https://drive.google.com/open?id=1C75piZ_YxpFzOQyhif_ERpaWov5PC4gd
+
 - 模型load：load checkpoint（参考已有代码）
 
 - 图像处理：
