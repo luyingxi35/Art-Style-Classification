@@ -1,0 +1,9 @@
+csv_path: "../raw_data/all_data_info.csv"
+# img_dir: "../raw_data/train_1"
+img_dir: "../testie"
+model_path: "models/ResNet50V2_ArtStyleClass.h5"
+output_patches: "patches/"
+# output_json: "resnet_data_for_shallow_4/"
+output_json: "resnet_test_data_for_shallow_4/"
+# output_json: "test_data_for_shallow/"
+cnn_input_size: 325
