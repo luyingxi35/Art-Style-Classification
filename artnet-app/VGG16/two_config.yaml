@@ -1,0 +1,28 @@
+csv_path: "../raw_data/all_data_info.csv"
+
+img_dir:
+  - "../raw_data/train_1"
+  - "../raw_data/train_2"
+  - "../raw_data/train_3"
+  - "../raw_data/train_4"
+  - "../raw_data/train_5"
+  - "../raw_data/train_6"
+  - "../raw_data/train_7"
+  - "../raw_data/train_8"
+  - "../raw_data/train_9"
+
+#img_dir: "../raw_data/test"
+# img_dir: "../testie"
+
+model_path: "fine_tuned_VGG16_180x180.h5"
+
+output_json: "2_train_data_for_shallow/"
+# output_json: "2_test_data_for_shallow/"
+
+output_img: "trainie/"
+# output_img: "testie/"
+
+cnn_input_size: 180
+
+in_train: True
+#in_train: False

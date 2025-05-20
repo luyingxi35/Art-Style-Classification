@@ -20,7 +20,7 @@ class CustomDataset(Dataset):
                     # 检查scores和label格式
                     scores = file_data['scores']
                     label = file_data['label']
-                    if (isinstance(scores, list) and len(scores) == 6 and all(isinstance(row, list) and len(row) == 17 for row in scores)
+                    if (isinstance(scores, list) and len(scores) == 2 and all(isinstance(row, list) and len(row) == 17 for row in scores)
                         and isinstance(label, list) and len(label) == 17):
                         self.data.append(file_data)
                         self.inputs.append(torch.tensor(scores, dtype=torch.float32))
@@ -37,7 +37,7 @@ class CustomDataset(Dataset):
 
 # 神经网络模型（输入展平为25维）
 class ShallowNN(nn.Module):
-    def __init__(self, input_dim=102, hidden_dim1=256, hidden_dim2=128, hidden_dim3=64, output_dim=17, dropout=0.3):
+    def __init__(self, input_dim=34, hidden_dim1=256, hidden_dim2=128, hidden_dim3=64, output_dim=17, dropout=0.3):
         super().__init__()
         self.flatten = nn.Flatten()
         self.fc1 = nn.Linear(input_dim, hidden_dim1)
@@ -66,7 +66,7 @@ class ShallowNN(nn.Module):
         return x
     
 class ResNetSNN(nn.Module):
-    def __init__(self, input_dim=102, hidden_dim1=256, hidden_dim2=128, hidden_dim3=64, output_dim=17, dropout=0.3):
+    def __init__(self, input_dim=34, hidden_dim1=256, hidden_dim2=128, hidden_dim3=64, output_dim=17, dropout=0.3):
         super().__init__()
         self.flatten = nn.Flatten()
         # 第一层
@@ -149,7 +149,7 @@ def test_model(model, test_loader, criterion):
 # 新增代码：加载模型并进行单样本测试
 def load_and_test(model_path, input_sample):
     # 1. 初始化模型（必须与训练时的结构完全一致）
-    model = ShallowNN(input_dim=102, hidden_dim=128)
+    model = ShallowNN(input_dim=34, hidden_dim=128)
     
     # 2. 加载保存的权重
     try:
@@ -208,12 +208,12 @@ if __name__ == "__main__":
     HIDDEN_DIM = 128
 
     # 加载数据
-    train_dataset = CustomDataset('17_train_data_for_shallow')
+    train_dataset = CustomDataset('2_train_data_for_shallow')
     train_loader = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True)
 
     # 初始化模型
     model = ResNetSNN(
-        input_dim=102,
+        input_dim=34,
         hidden_dim1=256,
         hidden_dim2=128,
         hidden_dim3=64,
@@ -230,4 +230,4 @@ if __name__ == "__main__":
     train_model(model, train_loader, criterion, optimizer, scheduler, EPOCHS)
 
     # 保存模型
-    torch.save(model.state_dict(), 'shallow_nn_6x17.pth')
+    torch.save(model.state_dict(), 'shallow_nn_2x17.pth')

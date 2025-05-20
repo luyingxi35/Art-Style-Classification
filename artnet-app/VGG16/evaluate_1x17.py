@@ -11,17 +11,19 @@ from sklearn.metrics import classification_report
 
 
 # TEST_DATA_PATH = 'test_data_for_shallow'  # 测试数据集路径
-TEST_DATA_PATH = '17_test_data_for_shallow'  # 测试数据集路径
+TEST_DATA_PATH = '2_test_data_for_shallow'  # 测试数据集路径
 IMAGE_PATH = 'testie'
 BASELINE_MODEL_PATH = 'fine_tuned_VGG16_180x180.h5'
 # SHALLOWNN_PATH = 'shallow_nn_5x5_62.pth'
-SHALLOWNN_PATH = 'shallow_nn_6x17.pth'
+SHALLOWNN_PATH = 'shallow_nn_2x17.pth'
 IS_BASELINE = False # 是否使用基线模型
 
+PATCH_NUM = 1
+VEC_DIM = 17
 
 # 定义
 class ShallowNN(nn.Module):
-    def __init__(self, input_dim=102, hidden_dim1=256, hidden_dim2=128, hidden_dim3=64, output_dim=17, dropout=0.3):
+    def __init__(self, input_dim=PATCH_NUM*VEC_DIM, hidden_dim1=256, hidden_dim2=128, hidden_dim3=64, output_dim=17, dropout=0.3):
         super().__init__()
         self.flatten = nn.Flatten()
         self.fc1 = nn.Linear(input_dim, hidden_dim1)
@@ -185,7 +187,7 @@ if __name__ == '__main__':
         model = load_model(BASELINE_MODEL_PATH)
     else:
         model = ResNetSNN(
-            input_dim=102,
+            input_dim=PATCH_NUM*VEC_DIM,
             hidden_dim1=256,
             hidden_dim2=128,
             hidden_dim3=64,

@@ -5,3 +5,7 @@ test_data_for_shallow/
 fine_tuned_VGG16_180x180.h5
 17_train_data_for_shallow/
 17_test_data_for_shallow/
+2_train_data_for_shallow/
+2_test_data_for_shallow/
+1_test_data_for_shallow/
+1_train_data_for_shallow/
