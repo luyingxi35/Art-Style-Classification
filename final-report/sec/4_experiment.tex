@@ -1,2 +1,25 @@
 \section{Experiment}
-
+\label{sec:experiment}
+In this section, we present an comprehensive evaluation of our proposed method.
+\subsection{Experiment Setup}
+\subsubsection{Dataset}We utilize the Painter by Numbers dataset \cite{painter_by_numbers} as
+the primary source of paintings for our study. This dataset is a vast collection of approximately 23,000 unique paintings, each labeled with the painter's name, style (or movement), genre, and additional information\cite{artnet}. For each experiment, we select a subset of 4,000 to 5,000 paintings from the training data. Additionally, we use 500 paintings from the test set for evaluation purposes.
+\subsubsection{Evaluation}In order to get a comprehensive understanding of the model's performance, we evaluate the model using four metrics: accuracy, precision, recall and F1 score. 
+\begin{itemize}
+    \item \textbf{Accuracy:} The ratio of correctly predicted instances to the total instances in the dataset.
+    \item \textbf{Precision:} The ratio of true positive predictions to the total predicted positives. It indicates the quality of the positive predictions.
+    \item \textbf{Recall:} The ratio of true positive predictions to the total actual positives. It measures the model's ability to identify all relevant instances.
+    \item \textbf{F1 Score:} The harmonic mean of precision and recall. It provides a balance between precision and recall, especially useful when dealing with imbalanced datasets.
+\end{itemize}
+Moreover, we not only evaluate the overall model performance but also analyze each class's performance. This provides deeper insights into the model's strengths and weaknesses across categories, helping identify specific areas needing improvement and ensuring consistent performance across all classes.
+\subsubsection{Baseline}We evaluate out SNN adapter on 3 various already-trained DNN models, \textit{DenseNet-121, VGG-19, and ResNet-50}. 
+\begin{itemize}
+    \item \textbf{DenseNet-121:} We adopt ArtNet model\cite{artnet} trained with DenseNet-121 architecture as our first baseline A key feature of ArtNet is its preprocessing
+strategy, where each input image is first padded to a uniform
+size and then divided into five patches. Both the full image
+and its patches are included in the training set, enabling the
+model to learn from global composition as well as local texture details, making it 
+a perfect choice for our baseline model.
+\item \textbf{VGG-19:} We utilize the model trained by \cite{qchaldemer2023paintingclassification} as our baseline for VGG-19. This model is trained on the same dataset as our method, with a test accuracy lower than ArtNet.
+\item \textbf{ResNet-50:} We also employ the pretrained ResNet-50 model from \cite{kayracoskun2023artstyleclassification}. Our results show that even if the base model's performance is subpar, the SNN adapter can still significantly enhance the overall performance.
+\end{itemize}

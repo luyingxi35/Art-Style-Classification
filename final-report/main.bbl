@@ -1,4 +1,4 @@
-\begin{thebibliography}{5}
+\begin{thebibliography}{9}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \expandafter\ifx\csname urlstyle\endcsname\relax
@@ -15,6 +15,17 @@ Eva Cetinic, Tomislav Lipic, and Sonja Grgic.
 \newblock Fine-tuning convolutional neural networks for fine art classification.
 \newblock \emph{Expert Systems with Applications}, 114:\penalty0 107--118, 2018.
 
+\bibitem[Chevi()]{artnet}
+Rendi Chevi.
+\newblock Artnet - painting style classification and feature visualization.
+\newblock \url{https://github.com/rendchevi/artnet-app}.
+\newblock Accessed: 2025-04-24.
+
+\bibitem[Coşkun(2023)]{kayracoskun2023artstyleclassification}
+Kayra Coşkun.
+\newblock Art style classification with transfer learning (vgg16 and resnet50v2).
+\newblock \url{https://github.com/kayracoskun/Art_Style_Classification/tree/main}, 2023.
+
 \bibitem[Hua et~al.(2020)Hua, Ho, Jangtjik, Chen, and Yeh]{hua2020artist}
 Kai-Lung Hua, Trang-Thi Ho, Kevin-Alfianto Jangtjik, Yu-Jen Chen, and Mei-Chen Yeh.
 \newblock Artist-based painting classification using markov random fields with convolution neural network.
@@ -25,9 +36,20 @@ Saqib Imran, Rizwan~Ali Naqvi, Muhammad Sajid, Tauqeer~Safdar Malik, Saif Ullah,
 \newblock Artistic style recognition: combining deep and shallow neural networks for painting classification.
 \newblock \emph{Mathematics}, 11\penalty0 (22):\penalty0 4564, 2023.
 
+\bibitem[Kaggle()]{painter_by_numbers}
+Kaggle.
+\newblock Painter by numbers.
+\newblock \url{https://www.kaggle.com/c/painter-by-numbers/data}.
+\newblock Accessed: 2025-04-24.
+
 \bibitem[Li(2025)]{li2025enhanced}
 Weiwei Li.
 \newblock Enhanced automated art curation using supervised modified cnn for art style classification.
 \newblock \emph{Scientific Reports}, 15\penalty0 (1):\penalty0 7319, 2025.
+
+\bibitem[Qchaldemer(2023)]{qchaldemer2023paintingclassification}
+Qchaldemer.
+\newblock painting-classification: Classifier of paintings depending on their style (impressionism, barocco, \dots).
+\newblock \url{https://github.com/qchaldemer/painting-classification/tree/master}, 2023.
 
 \end{thebibliography}

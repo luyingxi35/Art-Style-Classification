@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.141592653-2.6-0.999996 (TeX Live 2024) (preloaded format=xelatex 2024.3.22)  24 MAY 2025 02:27
+This is XeTeX, Version 3.141592653-2.6-0.999996 (TeX Live 2024) (preloaded format=xelatex 2024.3.22)  24 MAY 2025 03:11
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -452,7 +452,9 @@ Overfull \hbox (11.29218pt too wide) in paragraph at lines 35--36
 \tf@brf=\write4
 \openout4 = `main.brf'.
 
-) [3] (./main.aux)
+ [3]) [4
+
+] (./main.aux)
  ***********
 LaTeX2e <2023-11-01> patch level 1
 L3 programming layer <2024-02-20>
@@ -462,17 +464,22 @@ L3 programming layer <2024-02-20>
 LaTeX Font Warning: Some font shapes were not available, defaults substituted.
 
 Package rerunfilecheck Info: File `main.out' has not changed.
-(rerunfilecheck)             Checksum: E7EA1030B1CACA360DDCAE5198D5DE17;990.
-Package rerunfilecheck Info: File `main.brf' has not changed.
-(rerunfilecheck)             Checksum: 01D3321E4723C2FC6BB00FDCFDA82EDC;493.
+(rerunfilecheck)             Checksum: EFDED8DF8B27A08712DF17877C7A6908;1459.
+
+Package rerunfilecheck Warning: File `main.brf' has changed.
+(rerunfilecheck)                Rerun to get bibliographical references right.
+
+Package rerunfilecheck Info: Checksums for `main.brf':
+(rerunfilecheck)             Before: C0560BDB1A399A82871BBCE3DC552085;743
+(rerunfilecheck)             After:  C4290F694BDEDDFE86809985042B4EBA;826.
  ) 
 Here is how much of TeX's memory you used:
- 14371 strings out of 474773
- 237803 string characters out of 5761289
+ 14412 strings out of 474773
+ 238747 string characters out of 5761289
  1945842 words of memory out of 5000000
- 36327 multiletter control sequences out of 15000+600000
- 566682 words of font info for 74 fonts, out of 8000000 for 9000
+ 36364 multiletter control sequences out of 15000+600000
+ 568227 words of font info for 80 fonts, out of 8000000 for 9000
  1348 hyphenation exceptions out of 8191
- 87i,13n,93p,1256b,446s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 87i,13n,93p,1256b,494s stack positions out of 10000i,1000n,20000p,200000b,200000s
 
-Output written on main.pdf (3 pages).
+Output written on main.pdf (4 pages).
