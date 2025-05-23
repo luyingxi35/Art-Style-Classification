@@ -1,4 +1,4 @@
-\begin{thebibliography}{4}
+\begin{thebibliography}{5}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \expandafter\ifx\csname urlstyle\endcsname\relax
@@ -14,6 +14,11 @@ Moritz Alkofer.
 Eva Cetinic, Tomislav Lipic, and Sonja Grgic.
 \newblock Fine-tuning convolutional neural networks for fine art classification.
 \newblock \emph{Expert Systems with Applications}, 114:\penalty0 107--118, 2018.
+
+\bibitem[Hua et~al.(2020)Hua, Ho, Jangtjik, Chen, and Yeh]{hua2020artist}
+Kai-Lung Hua, Trang-Thi Ho, Kevin-Alfianto Jangtjik, Yu-Jen Chen, and Mei-Chen Yeh.
+\newblock Artist-based painting classification using markov random fields with convolution neural network.
+\newblock \emph{Multimedia Tools and Applications}, 79:\penalty0 12635--12658, 2020.
 
 \bibitem[Imran et~al.(2023)Imran, Naqvi, Sajid, Malik, Ullah, Moqurrab, and Yon]{imran2023artistic}
 Saqib Imran, Rizwan~Ali Naqvi, Muhammad Sajid, Tauqeer~Safdar Malik, Saif Ullah, Syed~Atif Moqurrab, and Dong~Keon Yon.
