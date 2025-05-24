@@ -5,6 +5,11 @@ from torch.utils.data import Dataset, DataLoader
 import json
 import os  # 添加 os 模块
 
+PATCH_NUM = 2
+CLASS_NUM = 9
+DATA_PATH = 'train_data_for_shallow_2x9'  # 数据集路径
+MODEL_PATH = 'shallow_nn_2x9.pth'  # 模型保存路径
+
 # 自定义数据集类（关键修改点：处理5×5输入）
 class CustomDataset(Dataset):
     def __init__(self, folder_path):
@@ -30,20 +35,28 @@ class CustomDataset(Dataset):
 
 # 神经网络模型（输入展平为25维）
 class ShallowNN(nn.Module):
-    def __init__(self, input_dim=45, hidden_dim=128, output_dim=9, dropout_rate=0.2):
+    def __init__(self, input_dim=PATCH_NUM*CLASS_NUM, hidden_dim=128, hidden_dim1=64, hidden_dim2=32, output_dim=CLASS_NUM, dropout_rate=0.3):
         super().__init__()
-        self.flatten = nn.Flatten()  # 将5×5输入展平为25维
+        self.flatten = nn.Flatten()
         self.fc1 = nn.Linear(input_dim, hidden_dim)
+        self.bn1 = nn.BatchNorm1d(hidden_dim)
+        self.fc2 = nn.Linear(hidden_dim, hidden_dim1)
+        self.bn2 = nn.BatchNorm1d(hidden_dim1)
+        self.fc3 = nn.Linear(hidden_dim1, output_dim)
+        self.bn3 = nn.BatchNorm1d(output_dim)
+   
         self.relu = nn.ReLU()
-        self.fc2 = nn.Linear(hidden_dim, output_dim)
-        self.dropout = nn.Dropout(dropout_rate)  # 添加Dropout层
+        self.dropout = nn.Dropout(dropout_rate)
 
     def forward(self, x):
-        x = self.flatten(x)  # 展平操作：形状从 (batch,5,5) 变为 (batch,25)
+        x = self.flatten(x)
         x = self.fc1(x)
         x = self.dropout(x)  # 应用Dropout
         x = self.relu(x)
         x = self.fc2(x)
+        x = self.relu(x)
+        x = self.fc3(x)
+        x = self.relu(x)
         return x
 
 # 训练函数
@@ -78,7 +91,7 @@ def test_model(model, test_loader, criterion):
 # 新增代码：加载模型并进行单样本测试
 def load_and_test(model_path, input_sample):
     # 1. 初始化模型（必须与训练时的结构完全一致）
-    model = ShallowNN(input_dim=45, hidden_dim=128)
+    model = ShallowNN(input_dim=PATCH_NUM*CLASS_NUM, hidden_dim=128)
     
     # 2. 加载保存的权重
     try:
@@ -132,25 +145,42 @@ def load_and_test(model_path, input_sample):
 if __name__ == "__main__":
     # 超参数
     BATCH_SIZE = 32
-    LEARNING_RATE = 0.002
-    EPOCHS = 500
+    LEARNING_RATE = 0.005
+    EPOCHS = 1000
     HIDDEN_DIM = 128
 
     # 加载数据
-    train_dataset = CustomDataset('data_for_shallow')  # 使用文件夹路径
+    train_dataset = CustomDataset(DATA_PATH)  # 使用文件夹路径
     # test_dataset = CustomDataset('test.json')
 
     train_loader = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True)
     # test_loader = DataLoader(test_dataset, batch_size=BATCH_SIZE)
 
     # 初始化模型
-    model = ShallowNN(input_dim=45, hidden_dim=HIDDEN_DIM)
+    model = ShallowNN(input_dim=PATCH_NUM*CLASS_NUM, hidden_dim=HIDDEN_DIM)
     criterion = nn.MSELoss()  # 适用于回归任务
     optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
 
+    # 学习率调度器，每100轮将lr乘以0.5
+    scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=100, gamma=0.5)
+
     # 训练与测试
-    train_model(model, train_loader, criterion, optimizer, EPOCHS)
+    for epoch in range(EPOCHS):
+        model.train()
+        running_loss = 0.0
+        for inputs, labels in train_loader:
+            optimizer.zero_grad()
+            outputs = model(inputs)
+            loss = criterion(outputs, labels)
+            loss.backward()
+            optimizer.step()
+            running_loss += loss.item()
+        scheduler.step()  # 更新学习率
+
+        if (epoch+1) % 10 == 0:
+            print(f'Epoch [{epoch+1}/{EPOCHS}], Loss: {running_loss/len(train_loader):.4f}, LR: {scheduler.get_last_lr()[0]:.6f}')
+
     # test_loss = test_model(model, test_loader, criterion)
 
     # 保存模型
-    torch.save(model.state_dict(), 'shallow_nn_5x5.pth')
+    torch.save(model.state_dict(), MODEL_PATH)

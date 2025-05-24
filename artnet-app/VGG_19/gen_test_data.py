@@ -14,12 +14,14 @@ import torch
 from PIL import Image
 from PIL import ImageFile
 
+PATCH_NUM = 2
+CLASS_NUM = 9
 # 加载配置
 with open('config.yaml', 'r') as f:
     cfg = yaml.safe_load(f)
-
+OUTPUT_JSON   = 'test_data_2x9'
 CSV_PATH      = cfg['csv_path']
-IMG_DIR       = cfg['img_dir']
+IMG_DIR       = '../testie'
 CHECKPOINT_PATH    = cfg['checkpoint_path']
 OUTPUT_JSON   = cfg['output_json']
 CNN_INPUT_SZ  = cfg['cnn_input_size']
@@ -163,41 +165,34 @@ def map_style(style):
     return 'Unknown'  # 如果风格不在映射中，返回 'Unknown'
 
 
-def preprocess_and_extract_patches(pil_image, cnn_input_size):
-    target = 2 * cnn_input_size
+def preprocess_and_extract_patches(pil_image, cnn_input_size, object_patch_path="../MainObjectSeek/object_patch/"):
+    """
+    返回两个patch:
+    1. 原图resize为cnn_input_size×cnn_input_size
+    2. object_patch同名文件resize为cnn_input_size×cnn_input_size（若不存在则用原图中心patch）
+    """
+    # 1. 原图resize
+    patch1 = pil_image.resize((cnn_input_size, cnn_input_size), Image.BILINEAR)
 
-    w, h = pil_image.size
-    scale = target / max(h, w)
-    new_w, new_h = int(w * scale), int(h * scale)
-    resized_image = pil_image.resize((new_w, new_h), Image.BILINEAR)
-
-    # 转为 NumPy，BGR
-    resized = np.array(resized_image)
-    if resized.ndim == 2:
-        resized = cv2.cvtColor(resized, cv2.COLOR_GRAY2BGR)
-    elif resized.shape[2] == 3:
-        resized = cv2.cvtColor(resized, cv2.COLOR_RGB2BGR)
-
-    pad_w = target - new_w
-    pad_h = target - new_h
-    top, bottom = pad_h // 2, pad_h - pad_h // 2
-    left, right = pad_w // 2, pad_w - pad_w // 2
-    padded = cv2.copyMakeBorder(resized, top, bottom, left, right,
-                                cv2.BORDER_CONSTANT, value=[0, 0, 0])
-
-    p = cnn_input_size
-    patches = [
-        padded[0:p,       0:p      ],
-        padded[0:p,       -p:      ],
-        padded[-p:,       0:p      ],
-        padded[-p:,       -p:      ],
-        padded[(target//2 - p//2):(target//2 + p//2),
-               (target//2 - p//2):(target//2 + p//2)]
-    ]
-
-    # 转为 PIL Image
-    pil_patches = [Image.fromarray(cv2.cvtColor(p, cv2.COLOR_BGR2RGB)) for p in patches]
-    return pil_patches
+    # 2. object_patch同名文件
+    if object_patch_path and os.path.exists(object_patch_path):
+        obj_img = Image.open(object_patch_path).convert('RGB')
+        patch2 = obj_img.resize((cnn_input_size, cnn_input_size), Image.BILINEAR)
+    else:
+        # 用原图中心patch
+        w, h = pil_image.size
+        left = (w - cnn_input_size) // 2
+        top = (h - cnn_input_size) // 2
+        patch2 = pil_image.crop((left, top, left + cnn_input_size, top + cnn_input_size))
+    if PATCH_NUM == 6:
+        # 3. 原图四角
+        patch3 = pil_image.crop((0, 0, cnn_input_size, cnn_input_size))
+        patch4 = pil_image.crop((w - cnn_input_size, 0, w, cnn_input_size))
+        patch5 = pil_image.crop((0, h - cnn_input_size, cnn_input_size, h))
+        patch6 = pil_image.crop((w - cnn_input_size, h - cnn_input_size, w, h))
+        return [patch1, patch2, patch3, patch4, patch5, patch6]
+    elif PATCH_NUM == 2:
+        return [patch1, patch2]
 
 
 

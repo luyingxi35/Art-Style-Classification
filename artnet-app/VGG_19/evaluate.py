@@ -1,8 +1,3 @@
-import os
-import json
-import cv2
-import numpy as np
-from tensorflow.keras.models import load_model
 import torch
 from torch.utils.data import Dataset, DataLoader
 import tensorflow as tf
@@ -15,16 +10,20 @@ import predict_utils
 from predict_utils import process_image, load_checkpoint, predict
 import torch
 
-
+PATCH_NUM = 2
+CLASS_NUM = 9
+TEST_DATA_PATH = 'test_data_2x9'  # 测试数据集路径
+SHALLOWNN_PATH = 'shallow_nn_2x9.pth'  # 模型路径
 # TEST_DATA_PATH = 'test_data_for_shallow'  # 测试数据集路径
-TEST_DATA_PATH_16 = 'hierachy/test_data_for_shallow_16'  # 测试数据集路径
-TEST_DATA_PATH_4 = 'hierachy/test_data_for_shallow_4'  # 测试数据集路径
-TEST_DATA_PATH_5 = 'test_data_for_shallow'  # 测试数据集路径
+# TEST_DATA_PATH_16 = 'hierachy/test_data_for_shallow_16'  # 测试数据集路径
+# TEST_DATA_PATH_4 = 'hierachy/test_data_for_shallow_4'  # 测试数据集路径
+# TEST_DATA_PATH_5 = 'test_data_for_shallow'  # 测试数据集路径
 IMAGE_PATH = '../testie'
 BASELINE_CKPT_PATH = 'checkpoint5.pth'  # 模型路径
-SHALLOWNN_5_PATH = 'shallow_nn_5x5_29.pth'
-SHALLOWNN_16_PATH = 'shallow_nn_16x16.pth'
-SHALLOWNN_4_PATH = 'shallow_nn_4x4.pth'
+#SHALLOWNN_5_PATH = 'shallow_nn_5x5_29.pth'
+# SHALLOWNN_5_PATH = 'shallow_nn_5x5.pth'
+# SHALLOWNN_16_PATH = 'shallow_nn_16x16.pth'
+# SHALLOWNN_4_PATH = 'shallow_nn_4x4.pth'
 IS_BASELINE = False  # 是否使用基线模型
 
 # 创建 ArgumentParser 对象
@@ -58,20 +57,27 @@ LABEL_TO_INDEX = {
 
 
 class ShallowNN(nn.Module):
-    def __init__(self, input_dim=45, hidden_dim=128, output_dim=9, dropout_rate=0.2):
+    def __init__(self, input_dim=PATCH_NUM*CLASS_NUM, hidden_dim=128, hidden_dim1=64, hidden_dim2=32, output_dim=CLASS_NUM, dropout_rate=0.3):
         super().__init__()
-        self.flatten = nn.Flatten()  # 将5×5输入展平为25维
+        self.flatten = nn.Flatten()
         self.fc1 = nn.Linear(input_dim, hidden_dim)
+        self.bn1 = nn.BatchNorm1d(hidden_dim)
+        self.fc2 = nn.Linear(hidden_dim, hidden_dim1)
+        self.bn2 = nn.BatchNorm1d(hidden_dim1)
+        self.fc3 = nn.Linear(hidden_dim1, output_dim)
+        self.bn3 = nn.BatchNorm1d(output_dim)
+   
         self.relu = nn.ReLU()
-        self.fc2 = nn.Linear(hidden_dim, output_dim)
-        self.dropout = nn.Dropout(dropout_rate)  # 添加Dropout层
+        self.dropout = nn.Dropout(dropout_rate)
 
     def forward(self, x):
-        x = self.flatten(x)  # 展平操作：形状从 (batch,5,5) 变为 (batch,25)
+        x = self.flatten(x)
         x = self.fc1(x)
-        x = self.dropout(x)  # 应用Dropout
         x = self.relu(x)
         x = self.fc2(x)
+        x = self.relu(x)
+        x = self.fc3(x)
+        x = self.relu(x)
         return x
     
 class ShallowNN_2(nn.Module):
@@ -130,7 +136,7 @@ def generate_pridiction_for_baseline(model, image_path):
     # image = tf.expand_dims(image, axis=0)  # 替代 np.expand_dims
     probs, top_labels = predict(image, model, 9)
     # 创建一个长度为 9 的列表，初始化为 0（因为有 9 个类别）
-    prob_vector = [0.0] * 9
+    prob_vector = [0.0] * CLASS_NUM
 
     # 根据 LABEL_TO_INDEX 的顺序填充概率值
     for label, prob in zip(top_labels, probs):
@@ -187,29 +193,24 @@ def compute_correction_rate(model, test_loader):
     return correct_count / total_count,  style_correction_rate, style_total, style_correct, all_preds, all_labels
 
 if __name__ == '__main__':
-    if MODEL_ID == 0:
-        TEST_DATA_PATH = TEST_DATA_PATH_5
-        SHALLOWNN_PATH = SHALLOWNN_5_PATH
-    elif MODEL_ID == 1:
-        TEST_DATA_PATH = TEST_DATA_PATH_4
-        SHALLOWNN_PATH = SHALLOWNN_4_PATH
-    elif MODEL_ID == 2:
-        TEST_DATA_PATH = TEST_DATA_PATH_16
-        SHALLOWNN_PATH = SHALLOWNN_16_PATH
-    else:
-        raise ValueError("Invalid MODEL_ID. Must be 0, 1, or 2.")
+    # if MODEL_ID == 0:
+    #     TEST_DATA_PATH = TEST_DATA_PATH_5
+    #     SHALLOWNN_PATH = SHALLOWNN_5_PATH
+    # elif MODEL_ID == 1:
+    #     TEST_DATA_PATH = TEST_DATA_PATH_4
+    #     SHALLOWNN_PATH = SHALLOWNN_4_PATH
+    # elif MODEL_ID == 2:
+    #     TEST_DATA_PATH = TEST_DATA_PATH_16
+    #     SHALLOWNN_PATH = SHALLOWNN_16_PATH
+    # else:
+    #     raise ValueError("Invalid MODEL_ID. Must be 0, 1, or 2.")
     test_dataset = CustomDataset(TEST_DATA_PATH)
     test_loader = DataLoader(test_dataset, batch_size=4, shuffle=True)
 
     if IS_BASELINE:
         model, _, _, _ = load_checkpoint(BASELINE_CKPT_PATH)
     else:
-        if MODEL_ID == 2:
-            model = ShallowNN_2()
-        elif MODEL_ID == 1:
-            model = ShallowNN(input_dim=45)
-        else:
-            model = ShallowNN(input_dim=45)
+        model = ShallowNN(input_dim=PATCH_NUM*CLASS_NUM)
         model.load_state_dict(torch.load(SHALLOWNN_PATH))
         model.eval()
 
@@ -223,4 +224,27 @@ if __name__ == '__main__':
         print(f"{name} Accuracy: {style_accuracy[i] * 100:.2f}% | Total: {style_total[i]} | Correct: {style_correct[i]}")
 
     print("\nClassification Report (Precision / Recall / F1-Score):")
-    print(classification_report(all_labels, all_preds, target_names=labels, digits=4))
+    print(classification_report(
+    all_labels, all_preds,
+    labels=list(range(len(labels))),
+    target_names=labels,
+    digits=4,
+    zero_division=0
+))  
+
+#6-patch
+#                       precision    recall  f1-score   support
+
+# Art Nouveau (Modern)     0.0000    0.0000    0.0000         0
+#              Baroque     0.6364    0.0700    0.1261       100
+#        Expressionism     0.3158    0.4200    0.3605       100
+#        Impressionism     0.3231    0.7119    0.4444        59
+#   Post-Impressionism     0.2683    0.2683    0.2683        41
+#               Rococo     0.0000    0.0000    0.0000         0
+#          Romanticism     0.0000    0.0000    0.0000         0
+#           Surrealism     0.4352    0.4700    0.4519       100
+#            Symbolism     0.0000    0.0000    0.0000       100
+
+#             accuracy                         0.2980       500
+#            macro avg     0.2199    0.2156    0.1835       500
+#         weighted avg     0.3376    0.2980    0.2622       500

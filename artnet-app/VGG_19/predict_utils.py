@@ -31,7 +31,12 @@ def process_image(pil_image):
         width = int(width * 256 / height)
         height = int(256)
         
-    resized_image = pil_image.resize((width, height), Image.ANTIALIAS)
+    try:
+        resample = Image.Resampling.LANCZOS
+    except AttributeError:
+        resample = Image.LANCZOS
+
+    resized_image = pil_image.resize((width, height), resample)
     
     # Crop center portion of the image
     x0 = (width - 224) / 2
