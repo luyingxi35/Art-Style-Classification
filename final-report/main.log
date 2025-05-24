@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.141592653-2.6-0.999996 (TeX Live 2024) (preloaded format=xelatex 2024.3.22)  24 MAY 2025 03:11
+This is XeTeX, Version 3.141592653-2.6-0.999996 (TeX Live 2024) (preloaded format=xelatex 2024.3.22)  24 MAY 2025 22:49
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -464,22 +464,17 @@ L3 programming layer <2024-02-20>
 LaTeX Font Warning: Some font shapes were not available, defaults substituted.
 
 Package rerunfilecheck Info: File `main.out' has not changed.
-(rerunfilecheck)             Checksum: EFDED8DF8B27A08712DF17877C7A6908;1459.
-
-Package rerunfilecheck Warning: File `main.brf' has changed.
-(rerunfilecheck)                Rerun to get bibliographical references right.
-
-Package rerunfilecheck Info: Checksums for `main.brf':
-(rerunfilecheck)             Before: C0560BDB1A399A82871BBCE3DC552085;743
-(rerunfilecheck)             After:  C4290F694BDEDDFE86809985042B4EBA;826.
+(rerunfilecheck)             Checksum: 44F736FA2A7AADC7C37CF867DF3F7AD9;1918.
+Package rerunfilecheck Info: File `main.brf' has not changed.
+(rerunfilecheck)             Checksum: C4290F694BDEDDFE86809985042B4EBA;826.
  ) 
 Here is how much of TeX's memory you used:
- 14412 strings out of 474773
- 238747 string characters out of 5761289
+ 14411 strings out of 474773
+ 238719 string characters out of 5761289
  1945842 words of memory out of 5000000
- 36364 multiletter control sequences out of 15000+600000
+ 36363 multiletter control sequences out of 15000+600000
  568227 words of font info for 80 fonts, out of 8000000 for 9000
  1348 hyphenation exceptions out of 8191
- 87i,13n,93p,1256b,494s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 87i,13n,93p,1256b,492s stack positions out of 10000i,1000n,20000p,200000b,200000s
 
 Output written on main.pdf (4 pages).
