@@ -73,4 +73,58 @@ Art Nouveau (Modern)     0.0000    0.0000    0.0000         0
            macro avg     0.2397    0.1949    0.1768       500
         weighted avg     0.3803    0.2720    0.2570       500
 
+## 2-patch(Main Object)
+                      precision    recall  f1-score   support
+
+Art Nouveau (Modern)     0.0000    0.0000    0.0000         0
+             Baroque     0.7500    0.0900    0.1607       100
+       Expressionism     0.3115    0.3800    0.3423       100
+       Impressionism     0.3394    0.6271    0.4405        59
+  Post-Impressionism     0.2308    0.2927    0.2581        41
+              Rococo     0.0000    0.0000    0.0000         0
+         Romanticism     0.0000    0.0000    0.0000         0
+          Surrealism     0.4123    0.4700    0.4393       100
+           Symbolism     0.0000    0.0000    0.0000       100
+
+           micro avg     0.2860    0.2860    0.2860       500
+           macro avg     0.2271    0.2066    0.1823       500
+        weighted avg     0.3537    0.2860    0.2616       500
+
+
+## 6-patch
+                      precision    recall  f1-score   support
+
+Art Nouveau (Modern)     0.0000    0.0000    0.0000         0
+             Baroque     0.6364    0.0700    0.1261       100
+       Expressionism     0.3158    0.4200    0.3605       100
+       Impressionism     0.3231    0.7119    0.4444        59
+  Post-Impressionism     0.2683    0.2683    0.2683        41
+              Rococo     0.0000    0.0000    0.0000         0
+         Romanticism     0.0000    0.0000    0.0000         0
+          Surrealism     0.4352    0.4700    0.4519       100
+           Symbolism     0.0000    0.0000    0.0000       100
+
+            accuracy                         0.2980       500
+           macro avg     0.2199    0.2156    0.1835       500
+        weighted avg     0.3376    0.2980    0.2622       500
+
+## 2-patch more data
+                      precision    recall  f1-score   support
+
+Art Nouveau (Modern)     0.0000    0.0000    0.0000         0
+             Baroque     0.7333    0.1100    0.1913       100
+       Expressionism     0.3514    0.3900    0.3697       100
+       Impressionism     0.4306    0.5254    0.4733        59
+  Post-Impressionism     0.3023    0.3171    0.3095        41
+              Rococo     0.0000    0.0000    0.0000         0
+         Romanticism     0.0000    0.0000    0.0000         0
+          Surrealism     0.3688    0.5200    0.4315       100
+           Symbolism     0.0625    0.0300    0.0405       100
+
+            accuracy                         0.2980       500
+           macro avg     0.2499    0.2103    0.2018       500
+        weighted avg     0.3788    0.2980    0.2878       500
+
+
+
         
