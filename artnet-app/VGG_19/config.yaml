@@ -6,4 +6,4 @@ output_patches: "patches/"
 output_json: "data_for_shallow/"
 # output_json: "test_data_for_shallow/"
 cnn_input_size: 325
-checkpoint_path: "checkpoint5.pth"
+checkpoint_path: "../models/checkpoint5.pth"

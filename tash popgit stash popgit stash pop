@@ -1,0 +1,50 @@
+[33mef460857[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mVGG19[m[33m, [m[1;31morigin/VGG19[m[33m)[m HEAD@{0}: checkout: moving from VGG16 to VGG19
+[33mced85019[m[33m ([m[1;31morigin/VGG16[m[33m, [m[1;32mVGG16[m[33m)[m HEAD@{1}: reset: moving to HEAD
+[33mced85019[m[33m ([m[1;31morigin/VGG16[m[33m, [m[1;32mVGG16[m[33m)[m HEAD@{2}: checkout: moving from ResNet50 to VGG16
+[33mdd58cd15[m[33m ([m[1;31morigin/ResNet50[m[33m, [m[1;32mResNet50[m[33m)[m HEAD@{3}: checkout: moving from VGG16 to ResNet50
+[33mced85019[m[33m ([m[1;31morigin/VGG16[m[33m, [m[1;32mVGG16[m[33m)[m HEAD@{4}: commit: more data formats
+[33m4d90e612[m HEAD@{5}: commit: full 17-dim data
+[33m526adb4c[m HEAD@{6}: commit: a data example
+[33ma76f913d[m HEAD@{7}: commit: VGG16 without model
+[33mfdc66d87[m[33m ([m[1;31morigin/master[m[33m, [m[1;32mmaster[m[33m)[m HEAD@{8}: checkout: moving from master to VGG16
+[33mfdc66d87[m[33m ([m[1;31morigin/master[m[33m, [m[1;32mmaster[m[33m)[m HEAD@{9}: checkout: moving from 2025-5-11 to master
+[33mc7ab0cf1[m[33m ([m[1;31morigin/2025-5-11[m[33m, [m[1;32m2025-5-11[m[33m)[m HEAD@{10}: commit: ignore
+[33m0f228d42[m HEAD@{11}: commit: 6patches
+[33md30c8c4f[m HEAD@{12}: checkout: moving from master to 2025-5-11
+[33mfdc66d87[m[33m ([m[1;31morigin/master[m[33m, [m[1;32mmaster[m[33m)[m HEAD@{13}: checkout: moving from 2025-5-11 to master
+[33md30c8c4f[m HEAD@{14}: checkout: moving from master to 2025-5-11
+[33md30c8c4f[m HEAD@{15}: commit: correct test data
+[33m1ae993f4[m HEAD@{16}: commit: 20 test per style
+[33m7c169416[m HEAD@{17}: checkout: moving from main to master
+[33m8f7c34e0[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmain[m[33m)[m HEAD@{18}: checkout: moving from master to main
+[33mf7d1d3ba[m HEAD@{19}: pull --ff --recurse-submodules --progress origin: Fast-forward
+[33ma4455b00[m HEAD@{20}: commit: dataset and data processing
+[33m97ec8709[m HEAD@{21}: pull --ff --recurse-submodules --progress origin: Fast-forward
+[33me86446a9[m HEAD@{22}: commit: testie
+[33m4d15801a[m HEAD@{23}: commit: 100 test data
+[33m86e15bd0[m HEAD@{24}: commit: 100 test data
+[33mc0ef70a2[m HEAD@{25}: reset: moving to c0ef70a283075ce7d6d5bfe57e6c362a270b7c9f
+[33m1c4af216[m HEAD@{26}: commit: raw data
+[33mc0ef70a2[m HEAD@{27}: commit: data_for_shallow
+[33m9a6c2299[m HEAD@{28}: pull --ff --recurse-submodules --progress origin: Merge made by the 'ort' strategy.
+[33m2a419a99[m HEAD@{29}: commit: data of train_1 processed
+[33mcfaa8f2a[m HEAD@{30}: reset: moving to cfaa8f2a78d892372f716fc49c9471bc389bc5bf
+[33m68e0e8e8[m HEAD@{31}: reset: moving to 68e0e8e8b255100dbf4defd60782c4a0499adf6c
+[33mb43081fc[m HEAD@{32}: reset: moving to b43081f
+[33m3cfc9bf1[m HEAD@{33}: commit: Remove raw_data folder from tracking
+[33me8f4783b[m HEAD@{34}: commit: Create .gitignore
+[33m7994e78d[m HEAD@{35}: commit (merge): Merge branch 'master' of https://github.com/luyingxi35/Art-Style-Classification
+[33m68e0e8e8[m HEAD@{36}: reset: moving to 68e0e8e
+[33mb43081fc[m HEAD@{37}: reset: moving to b43081f
+[33mcf35fee3[m HEAD@{38}: reset: moving to cf35fee
+[33m929d85a7[m HEAD@{39}: reset: moving to origin/master
+[33m929d85a7[m HEAD@{40}: commit: data of train_1 processed
+[33mcfaa8f2a[m HEAD@{41}: reset: moving to origin/master
+[33m58d7fbc6[m HEAD@{42}: reset: moving to 58d7fbc691889caed2393541c4e47040f4fd8fb4
+[33mcf35fee3[m HEAD@{43}: commit: data of train_1 processed
+[33m58d7fbc6[m HEAD@{44}: commit: data of train_1 processed
+[33mb43081fc[m HEAD@{45}: commit: data of train_1 processed
+[33m68e0e8e8[m HEAD@{46}: commit: data of train_1 processed
+[33mcfaa8f2a[m HEAD@{47}: pull --ff --recurse-submodules --progress origin: Fast-forward
+[33mc545f706[m HEAD@{48}: checkout: moving from main to master
+[33m8f7c34e0[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmain[m[33m)[m HEAD@{49}: clone: from https://github.com/luyingxi35/Art-Style-Classification.git
